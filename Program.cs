@@ -7,6 +7,7 @@ using ImGuiNET;
 using Raylib_cs;
 using rlImGui_cs;
 using ShapeShifter.Controllers;
+using ShapeShifter.Rendering;
 using ShapeShifter.Setup;
 using ShapeShifter.Views;
 
@@ -22,6 +23,8 @@ namespace ShapeShifter
             var scene = DemoSceneFactory.Create();
             var renderer = new SceneRenderer();
             var controller = new EditorController(scene);
+            var panel = new EditorPanel();
+            var lineAlgorithm = LineAlgorithm.Library;
 
             
             Raylib.InitWindow(screenWidth,screenHeight,"ShapeShifter");
@@ -31,14 +34,32 @@ namespace ShapeShifter
 
             while(!Raylib.WindowShouldClose())
             {
-                var mouse = Raylib.GetMousePosition();
-                var hoveredVertex = controller.FindVertexAt(mouse);
                 Raylib.BeginDrawing();
-
                 Raylib.ClearBackground(Color.White);
-                renderer.Draw(scene,hoveredVertex);
 
-                
+                rlImGui.Begin();
+                var io = ImGui.GetIO();
+                bool focused = Raylib.IsWindowFocused();
+                bool pointerAvailable = focused && !io.WantCaptureMouse;
+                bool keyboardAvailable = focused && !io.WantCaptureKeyboard;
+                var mouse = Raylib.GetMousePosition();
+                var isLeftPressed = focused && Raylib.IsMouseButtonPressed(MouseButton.Left);
+                var isLeftDown = focused && Raylib.IsMouseButtonDown(MouseButton.Left);
+                controller.UpdatePointer(mouse, isLeftPressed, isLeftDown, pointerAvailable);
+                if (pointerAvailable && keyboardAvailable)
+                {
+                    if (Raylib.IsKeyPressed(KeyboardKey.Insert))
+                    {
+                        controller.InsertVertexAtHoveredEdge();
+                    }
+                    else if (Raylib.IsKeyPressed(KeyboardKey.Delete))
+                    {
+                        controller.DeleteHoveredVertex();
+                    }
+                }
+                panel.Draw(controller.StatusMessage, ref lineAlgorithm);
+                renderer.Draw(scene, controller.HoveredVertex, controller.HoveredEdge, controller.HoveredPolygon,lineAlgorithm);
+                rlImGui.End();
                 Raylib.EndDrawing();
             }
             rlImGui.Shutdown();
