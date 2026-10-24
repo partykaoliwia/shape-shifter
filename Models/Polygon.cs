@@ -13,7 +13,7 @@ namespace ShapeShifter.Models
                 throw new ArgumentException("Not enough vertices.");
             }
             
-            for (int i=0; i<vertices.Count(); i++)
+            for (int i=0; i<vertices.Count; i++)
             {
                 int nextIndex = (i + 1) % vertices.Count;
                 var edge = new Edge(vertices[i],vertices[nextIndex]);
