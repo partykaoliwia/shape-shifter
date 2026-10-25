@@ -8,15 +8,19 @@ namespace ShapeShifter.Views
 {
     public class SceneRenderer
     {
-        public void Draw(Scene scene,Vertex? hoveredVertex,Edge? hoveredEdge,Polygon? hoveredPolygon, LineAlgorithm lineAlgorithm)
+        public void Draw(Scene scene,Vertex? hoveredVertex,Edge? hoveredEdge,Polygon? hoveredPolygon, LineAlgorithm lineAlgorithm, IReadOnlyList<Edge> selectedEdges)
         {
             foreach (var polygon in scene.Polygons)
             {
                 foreach (var edge in polygon.Edges)
                 {
                     var color = polygon == hoveredPolygon ? Color.Blue : Color.Black;
-
-                    if (edge == hoveredEdge)
+                    
+                    if (selectedEdges.Contains(edge))
+                    {
+                        color = Color.Green;
+                    }
+                    else if (edge == hoveredEdge)
                     {
                         color = Color.Orange;
                     }

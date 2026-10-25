@@ -45,7 +45,8 @@ namespace ShapeShifter
                 var mouse = Raylib.GetMousePosition();
                 var isLeftPressed = focused && Raylib.IsMouseButtonPressed(MouseButton.Left);
                 var isLeftDown = focused && Raylib.IsMouseButtonDown(MouseButton.Left);
-                controller.UpdatePointer(mouse, isLeftPressed, isLeftDown, pointerAvailable);
+                var addAnother = keyboardAvailable && (Raylib.IsKeyDown(KeyboardKey.LeftControl) || Raylib.IsKeyDown(KeyboardKey.RightControl));
+                controller.UpdatePointer(mouse, isLeftPressed, isLeftDown, pointerAvailable, addAnother);
                 if (pointerAvailable && keyboardAvailable)
                 {
                     if (Raylib.IsKeyPressed(KeyboardKey.Insert))
@@ -58,7 +59,7 @@ namespace ShapeShifter
                     }
                 }
                 panel.Draw(controller.StatusMessage, ref lineAlgorithm);
-                renderer.Draw(scene, controller.HoveredVertex, controller.HoveredEdge, controller.HoveredPolygon,lineAlgorithm);
+                renderer.Draw(scene, controller.HoveredVertex, controller.HoveredEdge, controller.HoveredPolygon,lineAlgorithm,controller.SelectedEdges);
                 rlImGui.End();
                 Raylib.EndDrawing();
             }

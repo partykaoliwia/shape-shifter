@@ -19,13 +19,16 @@ namespace ShapeShifter.Controllers
         public Polygon? HoveredPolygon { get; private set; }
         public string? StatusMessage { get; private set; }
 
+        private readonly List<Edge> selectedEdges = new();
+        public IReadOnlyList<Edge> SelectedEdges => selectedEdges;
+
         public bool IsDragging => draggedVertex != null || draggedPolygon != null;
         public EditorController(Scene scene)
         {
             this.scene = scene;
         }
 
-        public void UpdatePointer(Vector2 mousePosition, bool leftPressed, bool leftDown, bool pointerAvailable)
+        public void UpdatePointer(Vector2 mousePosition, bool leftPressed, bool leftDown, bool pointerAvailable, bool addAnother)
         {
             Vector2 offset = mousePosition - previousMousePosition;
             previousMousePosition = mousePosition;
@@ -60,12 +63,26 @@ namespace ShapeShifter.Controllers
             StatusMessage = null;
             if (HoveredVertex != null)
             {
+                if (addAnother)
+                {
+                    return;
+                }
+
                 draggedVertex = HoveredVertex;
                 draggedVertex.ChangePosition(mousePosition);
             }
             else if (HoveredEdge != null)
             {
-                draggedPolygon = HoveredPolygon;
+                SelectEdge(HoveredEdge, addAnother);
+
+                if (!addAnother)
+                {
+                    draggedPolygon = HoveredPolygon;
+                }
+            }
+            else if (!addAnother)
+            {
+                selectedEdges.Clear();
             }
         }
         public void InsertVertexAtHoveredEdge()
@@ -76,6 +93,7 @@ namespace ShapeShifter.Controllers
             }
             if (HoveredPolygon.SplitEdge(HoveredEdge))
             {
+                RemoveInvalidSelections();
                 StatusMessage = "Vertex added.";
                 UpdateHover(previousMousePosition);
             }
@@ -88,6 +106,7 @@ namespace ShapeShifter.Controllers
             }
             if (HoveredPolygon.TryRemoveVertex(HoveredVertex))
             {
+                RemoveInvalidSelections();
                 StatusMessage = "Vertex deleted.";
                 UpdateHover(previousMousePosition);
             }
@@ -95,6 +114,30 @@ namespace ShapeShifter.Controllers
             {
                 StatusMessage = "A polygon must have at least 3 vertices.";
             }
+        }
+        public void SelectEdge(Edge edge, bool addAnother)
+        {
+            StatusMessage = null;
+
+            if (!addAnother)
+            {
+                selectedEdges.Clear();
+                selectedEdges.Add(edge);
+                return;
+            }
+
+            if (selectedEdges.Remove(edge))
+            {
+                return;
+            }
+
+            if (selectedEdges.Count >= 2)
+            {
+                StatusMessage = "You can select at most two edges.";
+                return;
+            }
+
+            selectedEdges.Add(edge);
         }
         private void StopDragging()
         {
@@ -146,6 +189,9 @@ namespace ShapeShifter.Controllers
             }
         }
 
-
+        private void RemoveInvalidSelections()
+        {
+            selectedEdges.RemoveAll(edge => !scene.Polygons.Any(polygon => polygon.Edges.Contains(edge)));
+        }
     }
 }

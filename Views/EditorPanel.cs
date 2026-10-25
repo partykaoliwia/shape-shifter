@@ -17,6 +17,9 @@ namespace ShapeShifter.Views
                 ImGui.Text("Drag an edge with LMB to move the polygon.");
                 ImGui.Text("Insert over an edge: add a midpoint vertex.");
                 ImGui.Text("Delete over a vertex: remove it.");
+                ImGui.Text("Click an edge to select it.");
+                ImGui.Text("Ctrl + click: toggle selection, up to two edges.");
+                ImGui.Text("Click empty space without Ctrl to clear selection.");
                 if (!string.IsNullOrEmpty(statusMessage))
                 {
                     ImGui.Separator();
