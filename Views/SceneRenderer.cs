@@ -3,24 +3,29 @@ using Raylib_cs;
 using ShapeShifter.Rendering;
 using System.Numerics;
 using ShapeShifter.Geometry;
+using ShapeShifter.Editing;
 
 namespace ShapeShifter.Views
 {
     public class SceneRenderer
     {
-        public void Draw(Scene scene,Vertex? hoveredVertex,Edge? hoveredEdge,Polygon? hoveredPolygon, LineAlgorithm lineAlgorithm, IReadOnlyList<Edge> selectedEdges,BezierControlPoint? hoveredControlPoint = null)
+       public void Draw(Scene scene, EditorState state,LineAlgorithm lineAlgorithm)
         {
+            var hovered = state.HoveredElement;
+
             foreach (var polygon in scene.Polygons)
             {
                 foreach (var edge in polygon.Edges)
                 {
-                    var color = polygon == hoveredPolygon ? Color.Blue : Color.Black;
-                    
-                    if (selectedEdges.Contains(edge))
+                    var color = polygon == hovered?.Polygon
+                        ? Color.Blue
+                        : Color.Black;
+
+                    if (state.SelectedEdges.Contains(edge))
                     {
                         color = Color.Green;
                     }
-                    else if (edge == hoveredEdge)
+                    else if (edge == hovered?.Edge)
                     {
                         color = Color.Orange;
                     }
@@ -33,12 +38,15 @@ namespace ShapeShifter.Views
             {
                 foreach (var edge in polygon.Edges)
                 {
-                    var color = edge.Start == hoveredVertex ? Color.Blue : Color.Red;
+                    var color = edge.Start == hovered?.Vertex
+                        ? Color.Blue
+                        : Color.Red;
 
                     Raylib.DrawCircleV(edge.Start.Position, 5f, color);
                 }
             }
-            DrawBezierHandles(scene, hoveredControlPoint);
+
+            DrawBezierHandles(scene, hovered?.ControlPoint);
             DrawLengthLabels(scene);
             DrawPerpendicularLabels(scene);
         }

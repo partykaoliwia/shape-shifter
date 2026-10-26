@@ -1,6 +1,5 @@
 using System.Numerics;
 using ShapeShifter.Editing;
-using ShapeShifter.Geometry;
 using ShapeShifter.Models;
 using ShapeShifter.Models.Constraints;
 
@@ -8,18 +7,18 @@ namespace ShapeShifter.Controllers
 {
     public partial class EditorController
     {
-        private const float VertexHitRadius = 8f;
-        private const float EdgeHitRadius = 6f;
         private readonly Scene scene;
         private readonly GeometryEditor geometryEditor;
+        private readonly SceneHitTester hitTester;
 
         private Vertex? draggedVertex;
         private Polygon? draggedPolygon;
         private Vector2 previousMousePosition;
 
-        public Vertex? HoveredVertex { get; private set; }
-        public Edge? HoveredEdge { get; private set; }
-        public Polygon? HoveredPolygon { get; private set; }
+        private HitTestResult? hoveredElement;
+        public Vertex? HoveredVertex => hoveredElement?.Vertex;
+        public Edge? HoveredEdge => hoveredElement?.Edge;
+        public Polygon? HoveredPolygon => hoveredElement?.Polygon;
         public string? StatusMessage { get; private set; }
 
         private readonly List<Edge> selectedEdges = new();
@@ -31,26 +30,31 @@ namespace ShapeShifter.Controllers
         {
             this.scene = scene;
             geometryEditor = new GeometryEditor(scene);
+            hitTester = new SceneHitTester(scene);
+        }
+        public EditorState GetState()
+        {
+            return new EditorState(hoveredElement,selectedEdges.ToArray());
         }
 
-        public void UpdatePointer(Vector2 mousePosition, bool leftPressed, bool leftDown, bool pointerAvailable, bool addAnother)
+        public void UpdateMouse(MouseInput input)
         {
-            Vector2 offset = mousePosition - previousMousePosition;
-            previousMousePosition = mousePosition;
+            Vector2 offset = input.Position - previousMousePosition;
+            previousMousePosition = input.Position;
 
-            if (!leftDown)
+            if (!input.LeftDown)
             {
                 StopDragging();
             }
             if (draggedControlPoint != null)
             {
-                geometryEditor.MoveControlPointTo(draggedControlPoint,mousePosition);
+                geometryEditor.MoveControlPointTo(draggedControlPoint,input.Position);
                 return;
             }
 
             if (draggedVertex != null)
             {
-                geometryEditor.MoveVertexTo(draggedVertex, mousePosition);
+                geometryEditor.MoveVertexTo(draggedVertex, input.Position);
                 return;
             }
 
@@ -60,48 +64,47 @@ namespace ShapeShifter.Controllers
                 return;
             }
 
-            if(!pointerAvailable)
+            if(!input.MouseAvailable)
             {
                 ClearHover();
                 return;
             }
-            UpdateHover(mousePosition);
-            UpdateBezierHover(mousePosition);
-            if (!leftPressed)
+            UpdateHover(input.Position);
+            if (!input.LeftPressed)
             {
                 return;
             }
             StatusMessage = null;
             if (HoveredControlPoint != null)
             {
-                if (!addAnother)
+                if (!input.ExtendSelection)
                 {
                     draggedControlPoint = HoveredControlPoint;
-                    geometryEditor.MoveControlPointTo(draggedControlPoint,mousePosition);
+                    geometryEditor.MoveControlPointTo(draggedControlPoint,input.Position);
                 }
 
                 return;
             }
             if (HoveredVertex != null)
             {
-                if (addAnother)
+                if (input.ExtendSelection)
                 {
                     return;
                 }
 
                 draggedVertex = HoveredVertex;
-                geometryEditor.MoveVertexTo(draggedVertex, mousePosition);
+                geometryEditor.MoveVertexTo(draggedVertex, input.Position);
             }
             else if (HoveredEdge != null)
             {
-                SelectEdge(HoveredEdge, addAnother);
+                SelectEdge(HoveredEdge, input.ExtendSelection);
 
-                if (!addAnother)
+                if (!input.ExtendSelection)
                 {
                     draggedPolygon = HoveredPolygon;
                 }
             }
-            else if (!addAnother)
+            else if (!input.ExtendSelection)
             {
                 selectedEdges.Clear();
             }
@@ -174,7 +177,6 @@ namespace ShapeShifter.Controllers
             {
                 RemoveInvalidSelections();
                 UpdateHover(previousMousePosition);
-                UpdateBezierHover(previousMousePosition);
 
                 StatusMessage = "Vertex added.";
             }
@@ -189,7 +191,6 @@ namespace ShapeShifter.Controllers
             {
                 RemoveInvalidSelections();
                 UpdateHover(previousMousePosition);
-                UpdateBezierHover(previousMousePosition);
 
                 StatusMessage = "Vertex deleted.";
             }
@@ -247,11 +248,11 @@ namespace ShapeShifter.Controllers
             geometryEditor.RemoveConstraint(constraint);
             StatusMessage = "Length constraint removed.";
         }
-        public void SelectEdge(Edge edge, bool addAnother)
+        public void SelectEdge(Edge edge, bool extendSelection)
         {
             StatusMessage = null;
 
-            if (!addAnother)
+            if (!extendSelection)
             {
                 selectedEdges.Clear();
                 selectedEdges.Add(edge);
@@ -279,53 +280,16 @@ namespace ShapeShifter.Controllers
         }
         private void ClearHover()
         {
-            HoveredVertex = null;
-            HoveredEdge = null;
-            HoveredPolygon = null;
-            HoveredControlPoint = null;
+            hoveredElement = null;
         }
         private void UpdateHover(Vector2 position)
         {
-            ClearHover();
-            float bestDistanceSquared = VertexHitRadius * VertexHitRadius;
-            foreach (var polygon in scene.Polygons)
-            {
-                foreach (var edge in polygon.Edges)
-                {
-                    float distanceSquared = Vector2.DistanceSquared(position,edge.Start.Position);
-                    if (distanceSquared<=bestDistanceSquared)
-                    {
-                        bestDistanceSquared = distanceSquared;
-                        HoveredVertex = edge.Start;
-                        HoveredPolygon = polygon;
-                    }
-                }
-
-            }
-            if (HoveredVertex != null)
-            {
-                return;
-            }
-
-            bestDistanceSquared = EdgeHitRadius * EdgeHitRadius;
-            foreach (var polygon in scene.Polygons)
-            {
-                foreach (var edge in polygon.Edges)
-                {
-                    float distanceSquared = EdgeGeometry.DistanceSquared(edge, position);
-                    if (distanceSquared<=bestDistanceSquared)
-                    {
-                        bestDistanceSquared = distanceSquared;
-                        HoveredEdge = edge;
-                        HoveredPolygon = polygon;
-                    }
-                }
-            }
+             hoveredElement = hitTester.HitTest(position);
         }
 
         private void RemoveInvalidSelections()
         {
-            selectedEdges.RemoveAll(edge => !scene.Polygons.Any(polygon => polygon.Edges.Contains(edge)));
+            selectedEdges.RemoveAll(edge => !scene.ContainsEdge(edge));
         }
     }
 }

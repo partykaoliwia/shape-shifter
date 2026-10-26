@@ -11,9 +11,9 @@ namespace ShapeShifter.Models
             position=pos;
         }
 
-        public void ChangePosition(Vector2 pos)
+        public void MoveTo(Vector2 position)
         {
-            position = pos;       
+            this.position = position;       
         }
     }
 }

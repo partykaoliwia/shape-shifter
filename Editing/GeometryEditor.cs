@@ -196,12 +196,12 @@ namespace ShapeShifter.Editing
             foreach (var vertex in GetConnectedVertices(
                 targets.Keys, constraints))
             {
-                vertex.ChangePosition(vertex.Position + offset);
+                vertex.MoveTo(vertex.Position + offset);
             }
 
             foreach (var target in targets)
             {
-                target.Key.ChangePosition(target.Value);
+                target.Key.MoveTo(target.Value);
             }
         }
 
@@ -219,7 +219,7 @@ namespace ShapeShifter.Editing
         {
             foreach (var entry in positions)
             {
-                entry.Key.ChangePosition(entry.Value);
+                entry.Key.MoveTo(entry.Value);
             }
         }
 

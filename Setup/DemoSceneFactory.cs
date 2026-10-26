@@ -28,7 +28,7 @@ namespace ShapeShifter.Setup
             };
             var polygon2 = new Polygon(vertices2);
             scene.AddPolygon(polygon2);
-            vertices1[0].ChangePosition(new Vector2(450, 550));
+            vertices1[0].MoveTo(new Vector2(450, 550));
 
             var edge = polygon1.Edges[0];
 

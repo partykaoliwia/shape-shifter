@@ -7,7 +7,7 @@ namespace ShapeShifter.Controllers
     {
         private BezierControlPoint? draggedControlPoint;
 
-        public BezierControlPoint? HoveredControlPoint { get; private set; }
+        public BezierControlPoint? HoveredControlPoint => hoveredElement?.ControlPoint;
 
         public void SetSelectedEdgeBezier(bool enabled)
         {
@@ -35,50 +35,8 @@ namespace ShapeShifter.Controllers
             }
 
             UpdateHover(previousMousePosition);
-            UpdateBezierHover(previousMousePosition);
         }
 
-        private void UpdateBezierHover(Vector2 position)
-        {
-            HoveredControlPoint = null;
-
-            // Polygon vertices take precedence over control points.
-            if (HoveredVertex is not null)
-            {
-                return;
-            }
-
-            float bestDistanceSquared =
-                VertexHitRadius * VertexHitRadius;
-
-            foreach (var polygon in scene.Polygons)
-            {
-                foreach (var edge in polygon.Edges)
-                {
-                    if (edge.Bezier is not { } segment)
-                    {
-                        continue;
-                    }
-
-                    foreach (var controlPoint in new[]
-                    {
-                        segment.Control1,
-                        segment.Control2
-                    })
-                    {
-                        float distanceSquared = Vector2.DistanceSquared(
-                            position, controlPoint.Position);
-
-                        if (distanceSquared <= bestDistanceSquared)
-                        {
-                            bestDistanceSquared = distanceSquared;
-                            HoveredControlPoint = controlPoint;
-                            HoveredPolygon = polygon;
-                            HoveredEdge = null;
-                        }
-                    }
-                }
-            }
-        }
+    
     }
 }

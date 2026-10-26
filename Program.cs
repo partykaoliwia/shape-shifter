@@ -10,6 +10,7 @@ using ShapeShifter.Controllers;
 using ShapeShifter.Rendering;
 using ShapeShifter.Setup;
 using ShapeShifter.Views;
+using ShapeShifter.Editing;
 
 namespace ShapeShifter
 {
@@ -40,14 +41,15 @@ namespace ShapeShifter
                 rlImGui.Begin();
                 var io = ImGui.GetIO();
                 bool focused = Raylib.IsWindowFocused();
-                bool pointerAvailable = focused && !io.WantCaptureMouse;
+                bool isMouseAvailable = focused && !io.WantCaptureMouse;
                 bool keyboardAvailable = focused && !io.WantCaptureKeyboard;
-                var mouse = Raylib.GetMousePosition();
+                var mousePosition = Raylib.GetMousePosition();
                 var isLeftPressed = focused && Raylib.IsMouseButtonPressed(MouseButton.Left);
                 var isLeftDown = focused && Raylib.IsMouseButtonDown(MouseButton.Left);
-                var addAnother = keyboardAvailable && (Raylib.IsKeyDown(KeyboardKey.LeftControl) || Raylib.IsKeyDown(KeyboardKey.RightControl));
-                controller.UpdatePointer(mouse, isLeftPressed, isLeftDown, pointerAvailable, addAnother);
-                if (pointerAvailable && keyboardAvailable)
+                var extendSelection = keyboardAvailable && (Raylib.IsKeyDown(KeyboardKey.LeftControl) || Raylib.IsKeyDown(KeyboardKey.RightControl));
+                var input = new MouseInput(Position: mousePosition, LeftPressed: isLeftPressed, LeftDown: isLeftDown, MouseAvailable:isMouseAvailable,ExtendSelection: extendSelection);
+                controller.UpdateMouse(input);
+                if (isMouseAvailable && keyboardAvailable)
                 {
                     if (Raylib.IsKeyPressed(KeyboardKey.Insert))
                     {
@@ -59,14 +61,7 @@ namespace ShapeShifter
                     }
                 }
                 panel.Draw(controller, ref lineAlgorithm);
-                renderer.Draw(
-                    scene,
-                    controller.HoveredVertex,
-                    controller.HoveredEdge,
-                    controller.HoveredPolygon,
-                    lineAlgorithm,
-                    controller.SelectedEdges,
-                    controller.HoveredControlPoint);
+                renderer.Draw(scene,controller.GetState(),lineAlgorithm);
                 rlImGui.End();
                 Raylib.EndDrawing();
             }
