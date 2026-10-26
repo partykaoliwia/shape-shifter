@@ -36,7 +36,10 @@ namespace ShapeShifter.Controllers
         }
         public EditorViewState GetViewState()
         {
-            return new EditorViewState(hoveredElement,selectedEdges.ToArray());
+            return new EditorViewState(
+                hoveredElement,
+                selectedEdges.ToArray(),
+                SelectedVertex);
         }
 
         public void UpdateMouse(MouseInput input)
@@ -81,6 +84,8 @@ namespace ShapeShifter.Controllers
             {
                 if (!input.ExtendSelection)
                 {
+                    SelectedVertex = HoveredControlPoint.Anchor;
+                    selectedEdges.Clear();
                     draggedControlPoint = HoveredControlPoint;
                     geometryEditor.MoveControlPointTo(draggedControlPoint,input.Position);
                 }
@@ -93,7 +98,8 @@ namespace ShapeShifter.Controllers
                 {
                     return;
                 }
-
+                SelectedVertex = HoveredVertex;
+                selectedEdges.Clear();
                 draggedVertex = HoveredVertex;
                 geometryEditor.MoveVertexTo(draggedVertex, input.Position);
             }
@@ -109,6 +115,7 @@ namespace ShapeShifter.Controllers
             else if (!input.ExtendSelection)
             {
                 selectedEdges.Clear();
+                SelectedVertex = null;
             }
         }
         
@@ -124,6 +131,10 @@ namespace ShapeShifter.Controllers
                 UpdateHover(previousMousePosition);
 
                 StatusMessage = "Vertex added.";
+            }
+            else
+            {
+                StatusMessage = "Cannot split this edge while preserving constraints.";
             }
         }
         public void DeleteHoveredVertex()
@@ -141,12 +152,15 @@ namespace ShapeShifter.Controllers
             }
             else
             {
-                StatusMessage = "A polygon must have at least 3 vertices.";
+                StatusMessage = HoveredPolygon.Edges.Count <= 3
+                    ? "A polygon must have at least 3 vertices."
+                    : "Cannot delete this vertex while preserving constraints.";
             }
         }
         
         public void SelectEdge(Edge edge, bool extendSelection)
         {
+            SelectedVertex = null;
             StatusMessage = null;
 
             if (!extendSelection)
@@ -187,6 +201,13 @@ namespace ShapeShifter.Controllers
         private void RemoveInvalidSelections()
         {
             selectedEdges.RemoveAll(edge => !scene.ContainsEdge(edge));
+            if (SelectedVertex != null
+                && !scene.Polygons
+                    .SelectMany(polygon => polygon.Edges)
+                    .Any(edge => edge.Start == SelectedVertex))
+            {
+                SelectedVertex = null;
+            }
         }
     }
 }

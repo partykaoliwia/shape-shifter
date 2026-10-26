@@ -12,13 +12,18 @@ namespace ShapeShifter.Controllers
             if (IsDragging || edge == null)
             {
                 StatusMessage = "Select exactly one edge and finish dragging.";
-
                 return;
             }
 
             if (enabled)
             {
-                int removedConstraintCount = geometryEditor.ConvertEdgeToBezier(edge);
+                if (!geometryEditor.TryConvertEdgeToBezier(
+                    edge, out int removedConstraintCount))
+                {
+                    StatusMessage =
+                        "Cannot enable Bezier while preserving continuity.";
+                    return;
+                }
 
                 StatusMessage = removedConstraintCount > 0
                     ? "Bezier enabled. Straight-edge constraints removed."
@@ -26,7 +31,13 @@ namespace ShapeShifter.Controllers
             }
             else
             {
-                geometryEditor.ConvertEdgeToLine(edge);
+                if (!geometryEditor.TryConvertEdgeToLine(edge))
+                {
+                    StatusMessage =
+                        "Cannot enable a line segment while preserving continuity.";
+                    return;
+                }
+
                 StatusMessage = "Line segment enabled.";
             }
 

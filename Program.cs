@@ -13,8 +13,8 @@ namespace ShapeShifter
     {
         static void Main()
         {
-            const int screenWidth = 800;
-            const int screenHeight = 600;
+            const int screenWidth = 1000;
+            const int screenHeight = 700;
 
             var scene = DemoSceneFactory.Create();
             var renderer = new SceneRenderer();

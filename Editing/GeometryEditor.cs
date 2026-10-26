@@ -5,7 +5,7 @@ using ShapeShifter.Models.Constraints;
 
 namespace ShapeShifter.Editing
 {
-    public class GeometryEditor
+    public partial class GeometryEditor
     {
         private readonly Scene scene;
         private readonly ConstraintSolver solver = new();
@@ -25,13 +25,12 @@ namespace ShapeShifter.Editing
             var previous = scene.GetLengthConstraint(edge);
             var replacement = new EdgeLengthConstraint(edge, targetLength);
 
-            var constraints = scene.Constraints
-                .Where(constraint => !ReferenceEquals(constraint, previous))
-                .Append(replacement)
-                .ToArray();
+            var constraints = GetSolverConstraints(scene.Constraints
+                    .Where(constraint => !ReferenceEquals(constraint, previous))
+                    .Append(replacement));
 
             var positions = CapturePositions();
-            var fixedVertices = new HashSet<Vertex> { edge.Start };
+            var fixedVertices = new HashSet<IGeometryVariable>{edge.Start};
 
             if (!solver.TrySolve(constraints, positions, fixedVertices))
             {
@@ -62,12 +61,10 @@ namespace ShapeShifter.Editing
 
             var constraint = new PerpendicularConstraint(first, second);
 
-            var constraints = scene.Constraints
-                .Append(constraint)
-                .ToArray();
+            var constraints = GetSolverConstraints(scene.Constraints.Append(constraint));
 
             var positions = CapturePositions();
-            var fixedVertices = new HashSet<Vertex> { first.Start };
+            var fixedVertices = new HashSet<IGeometryVariable> { first.Start };
 
             if (!solver.TrySolve(constraints, positions, fixedVertices))
             {
@@ -78,10 +75,6 @@ namespace ShapeShifter.Editing
             ApplyPositions(positions);
 
             return true;
-        }
-        public void MoveControlPointTo(BezierControlPoint controlPoint,Vector2 position)
-        {
-            controlPoint.MoveTo(position);
         }
         public void MoveVertexTo(Vertex vertex, Vector2 position)
         {
@@ -111,13 +104,14 @@ namespace ShapeShifter.Editing
                 return false;
             }
 
+            var previousEdges = polygon.Edges.ToArray();
+
             if (!polygon.TrySplitEdge(edge))
             {
                 return false;
             }
 
-            scene.RemoveInvalidConstraints();
-            return true;
+            return TryFinishTopologyChange(polygon, previousEdges);
         }
 
         public bool TryRemoveVertex(Polygon polygon, Vertex vertex)
@@ -127,37 +121,16 @@ namespace ShapeShifter.Editing
                 return false;
             }
 
+            var previousEdges = polygon.Edges.ToArray();
+
             if (!polygon.TryRemoveVertex(vertex))
             {
                 return false;
             }
 
-            scene.RemoveInvalidConstraints();
-            return true;
+            return TryFinishTopologyChange(polygon, previousEdges);
         }
-        public int ConvertEdgeToBezier(Edge edge)
-        {
-            EnsureEdgeBelongsToScene(edge);
-
-            var affectedConstraints = scene.Constraints
-                .Where(constraint => constraint.AffectedEdges.Contains(edge))
-                .ToArray();
-
-            edge.EnableBezier();
-
-            foreach (var constraint in affectedConstraints)
-            {
-                scene.RemoveConstraint(constraint);
-            }
-
-            return affectedConstraints.Length;
-        }
-
-        public void ConvertEdgeToLine(Edge edge)
-        {
-            EnsureEdgeBelongsToScene(edge);
-            edge.DisableBezier();
-        }
+    
 
         public bool RemoveConstraint(IGeometricConstraint constraint)
         {
@@ -177,9 +150,13 @@ namespace ShapeShifter.Editing
             Dictionary<Vertex, Vector2> targets,
             Vector2 offset)
         {
-            var constraints = scene.Constraints.ToArray();
+            var constraints = GetSolverConstraints(scene.Constraints);
+
             var positions = CapturePositions();
-            var fixedVertices = targets.Keys.ToHashSet();
+
+            var fixedVertices = targets.Keys
+                .Cast<IGeometryVariable>()
+                .ToHashSet();
 
             foreach (var target in targets)
             {
@@ -205,22 +182,15 @@ namespace ShapeShifter.Editing
             }
         }
 
-        private Dictionary<Vertex, Vector2> CapturePositions()
+        private Dictionary<IGeometryVariable, Vector2> CapturePositions()
         {
-            return scene.Polygons
-                .SelectMany(polygon => polygon.Edges)
-                .SelectMany(edge => new[] { edge.Start, edge.End })
-                .Distinct()
-                .ToDictionary(vertex => vertex, vertex => vertex.Position);
+            return GeometrySnapshot.Capture(scene);
         }
 
         private static void ApplyPositions(
-            IReadOnlyDictionary<Vertex, Vector2> positions)
+            IReadOnlyDictionary<IGeometryVariable, Vector2> positions)
         {
-            foreach (var entry in positions)
-            {
-                entry.Key.MoveTo(entry.Value);
-            }
+            GeometrySnapshot.Apply(positions);
         }
 
         private static HashSet<Vertex> GetConnectedVertices(

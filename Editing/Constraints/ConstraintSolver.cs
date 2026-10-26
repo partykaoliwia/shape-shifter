@@ -4,7 +4,7 @@ using ShapeShifter.Models.Constraints;
 
 namespace ShapeShifter.Editing.Constraints
 {
-    public class ConstraintSolver
+    public partial class ConstraintSolver
     {
         private const int MaxIterations = 512;
         private const float LengthTolerance = 0.001f;
@@ -13,10 +13,11 @@ namespace ShapeShifter.Editing.Constraints
 
         public bool TrySolve(
             IReadOnlyList<IGeometricConstraint> constraints,
-            Dictionary<Vertex, Vector2> positions,
-            IReadOnlySet<Vertex>? fixedVertices = null)
+            Dictionary<IGeometryVariable, Vector2> positions,
+            IReadOnlySet<IGeometryVariable>? fixedVertices = null,
+            ControlPointTarget? controlTarget = null)
         {
-            fixedVertices ??= new HashSet<Vertex>();
+            fixedVertices ??= new HashSet<IGeometryVariable>();
 
             if (!AreFinite(positions))
             {
@@ -26,14 +27,14 @@ namespace ShapeShifter.Editing.Constraints
             for (int iteration = 0; iteration < MaxIterations; iteration++)
             {
                 if (constraints.All(constraint =>
-                    IsSatisfied(constraint, positions)))
+                    IsSatisfied(constraint, positions, controlTarget)))
                 {
                     return true;
                 }
 
                 foreach (var constraint in constraints)
                 {
-                    if (IsSatisfied(constraint, positions))
+                    if (IsSatisfied(constraint, positions, controlTarget))
                     {
                         continue;
                     }
@@ -46,6 +47,13 @@ namespace ShapeShifter.Editing.Constraints
                         PerpendicularConstraint perpendicular =>
                             ProjectPerpendicular(
                                 perpendicular, positions, fixedVertices),
+
+                        ContinuityConstraint continuity =>
+                            ProjectContinuity(
+                                continuity,
+                                positions,
+                                fixedVertices,
+                                controlTarget),
 
                         _ => false
                     };
@@ -63,12 +71,13 @@ namespace ShapeShifter.Editing.Constraints
             }
 
             return constraints.All(constraint =>
-                IsSatisfied(constraint, positions));
+                IsSatisfied(constraint, positions, controlTarget));
         }
 
         private static bool IsSatisfied(
             IGeometricConstraint constraint,
-            IReadOnlyDictionary<Vertex, Vector2> positions)
+            IReadOnlyDictionary<IGeometryVariable, Vector2> positions,
+            ControlPointTarget? controlTarget)
         {
             switch (constraint)
             {
@@ -97,6 +106,11 @@ namespace ShapeShifter.Editing.Constraints
 
                     return MathF.Abs(cosine) <= PerpendicularTolerance;
                 }
+                case ContinuityConstraint continuity:
+                    return IsContinuitySatisfied(
+                        continuity,
+                        positions,
+                        controlTarget);
 
                 default:
                     return false;
@@ -105,8 +119,8 @@ namespace ShapeShifter.Editing.Constraints
 
         private static bool ProjectLength(
             EdgeLengthConstraint constraint,
-            Dictionary<Vertex, Vector2> positions,
-            IReadOnlySet<Vertex> fixedVertices)
+            Dictionary<IGeometryVariable, Vector2> positions,
+            IReadOnlySet<IGeometryVariable> fixedVertices)
         {
             Vertex start = constraint.Edge.Start;
             Vertex end = constraint.Edge.End;
@@ -143,8 +157,8 @@ namespace ShapeShifter.Editing.Constraints
 
         private static bool ProjectPerpendicular(
             PerpendicularConstraint constraint,
-            Dictionary<Vertex, Vector2> positions,
-            IReadOnlySet<Vertex> fixedVertices)
+            Dictionary<IGeometryVariable, Vector2> positions,
+            IReadOnlySet<IGeometryVariable> fixedVertices)
         {
             if (!TryGetDirections(
                 constraint, positions, out var u, out var v))
@@ -174,7 +188,7 @@ namespace ShapeShifter.Editing.Constraints
             Vector2 gradientV =
                 new Vector2(-v.Y, v.X) / v.LengthSquared();
 
-            var gradients = new Dictionary<Vertex, Vector2>();
+            var gradients = new Dictionary<IGeometryVariable, Vector2>();
 
             AddGradient(gradients, constraint.First.Start, gradientU);
             AddGradient(gradients, constraint.First.End, -gradientU);
@@ -204,8 +218,8 @@ namespace ShapeShifter.Editing.Constraints
         }
 
         private static void AddGradient(
-            Dictionary<Vertex, Vector2> gradients,
-            Vertex vertex,
+            Dictionary<IGeometryVariable, Vector2> gradients,
+            IGeometryVariable vertex,
             Vector2 gradient)
         {
             gradients.TryGetValue(vertex, out var existing);
@@ -214,7 +228,7 @@ namespace ShapeShifter.Editing.Constraints
 
         private static bool TryGetDirections(
             PerpendicularConstraint constraint,
-            IReadOnlyDictionary<Vertex, Vector2> positions,
+            IReadOnlyDictionary<IGeometryVariable, Vector2>positions,
             out Vector2 u,
             out Vector2 v)
         {
@@ -234,7 +248,7 @@ namespace ShapeShifter.Editing.Constraints
         }
 
         private static bool AreFinite(
-            IReadOnlyDictionary<Vertex, Vector2> positions)
+            IReadOnlyDictionary<IGeometryVariable, Vector2> positions)
         {
             return positions.Values.All(position =>
                 float.IsFinite(position.X)

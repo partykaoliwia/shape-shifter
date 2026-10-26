@@ -5,5 +5,6 @@ namespace ShapeShifter.Editing.Interaction
 {
     public sealed record EditorViewState(
         HitTestResult? HoveredElement,
-        IReadOnlyList<Edge> SelectedEdges);
+        IReadOnlyList<Edge> SelectedEdges,
+        Vertex? SelectedVertex = null);
 }

@@ -21,6 +21,7 @@ namespace ShapeShifter.Views
                 DrawPerpendicularEditor(controller);
                 DrawLengthEditor(controller);
                 DrawBezierEditor(controller);
+                DrawContinuityEditor(controller);
                 ImGui.Text("Drag a vertex with LMB to move it.");
                 ImGui.Text("Drag an edge with LMB to move the polygon.");
                 ImGui.Text("Insert over an edge: add a midpoint vertex.");

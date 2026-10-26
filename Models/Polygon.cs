@@ -84,5 +84,10 @@ namespace ShapeShifter.Models
 
             return true;
         }
+        internal void RestoreEdges(IReadOnlyList<Edge> previousEdges)
+        {
+            edges.Clear();
+            edges.AddRange(previousEdges);
+        }
     }
 }

@@ -2,9 +2,11 @@ using System.Numerics;
 
 namespace ShapeShifter.Models
 {
-    public class BezierControlPoint
+    public class BezierControlPoint : IGeometryVariable
     {
         private readonly Vertex anchor;
+        public Vertex Anchor => anchor;
+        public Vector2 Offset => offset;
         private Vector2 offset;
 
         public Vector2 Position => anchor.Position + offset;

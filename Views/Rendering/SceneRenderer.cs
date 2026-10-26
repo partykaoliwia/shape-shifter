@@ -37,9 +37,11 @@ namespace ShapeShifter.Views.Rendering
             {
                 foreach (var edge in polygon.Edges)
                 {
-                    var color = edge.Start == hovered?.Vertex
-                        ? Color.Blue
-                        : Color.Red;
+                    var color = edge.Start == state.SelectedVertex
+                        ? Color.Green
+                        : edge.Start == hovered?.Vertex
+                            ? Color.Blue
+                            : Color.Red;
 
                     Raylib.DrawCircleV(edge.Start.Position, 5f, color);
                 }
