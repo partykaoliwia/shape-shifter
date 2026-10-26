@@ -4,15 +4,21 @@ using System.Linq;
 using System.Threading.Tasks;
 using ImGuiNET;
 using ShapeShifter.Rendering;
+using System.Numerics;
+using ShapeShifter.Controllers;
+using ShapeShifter.Models;
 
 namespace ShapeShifter.Views
 {
     public class EditorPanel
     {
-        public void Draw(string? statusMessage, ref LineAlgorithm lineAlgorithm)
+        private Edge? lengthEditorEdge;
+        private float targetLength;
+        public void Draw(EditorController controller, ref LineAlgorithm lineAlgorithm)
         {
             if (ImGui.Begin("Editing"))
             {
+                DrawLengthEditor(controller);
                 ImGui.Text("Drag a vertex with LMB to move it.");
                 ImGui.Text("Drag an edge with LMB to move the polygon.");
                 ImGui.Text("Insert over an edge: add a midpoint vertex.");
@@ -20,10 +26,10 @@ namespace ShapeShifter.Views
                 ImGui.Text("Click an edge to select it.");
                 ImGui.Text("Ctrl + click: toggle selection, up to two edges.");
                 ImGui.Text("Click empty space without Ctrl to clear selection.");
-                if (!string.IsNullOrEmpty(statusMessage))
+                if (!string.IsNullOrEmpty(controller.StatusMessage))
                 {
                     ImGui.Separator();
-                    ImGui.TextWrapped(statusMessage);
+                    ImGui.TextWrapped(controller.StatusMessage);
                 }
 
                 ImGui.Separator();
@@ -40,6 +46,62 @@ namespace ShapeShifter.Views
                 }
             }
             ImGui.End();
+        }
+        private void DrawLengthEditor(EditorController controller)
+        {
+            ImGui.Separator();
+            ImGui.Text("Edge length");
+
+            var edge = controller.SelectedEdge;
+
+            if (edge == null)
+            {
+                lengthEditorEdge = null;
+                ImGui.Text("Select exactly one edge.");
+                return;
+            }
+
+            float currentLength = Vector2.Distance(edge.Start.Position,edge.End.Position);
+
+            // Initialize the input only when the selected edge changes.
+            if (lengthEditorEdge != edge)
+            {
+                lengthEditorEdge = edge;
+                targetLength = currentLength;
+            }
+
+            ImGui.Text($"Current length: {currentLength:F2}");
+
+            var constraint = controller.GetSelectedLengthConstraint();
+
+            if (constraint != null)
+            {
+                ImGui.Text($"Stored target: {constraint.TargetLength:F2}");
+            }
+            else
+            {
+                ImGui.Text("No length constraint.");
+            }
+
+            if (controller.IsDragging)
+            {
+                ImGui.Text("Finish dragging to edit the constraint.");
+                return;
+            }
+
+            ImGui.InputFloat("Target length",ref targetLength,1f,10f,"%.2f");
+
+            if (ImGui.Button("Set length"))
+            {
+                controller.SetSelectedEdgeLength(targetLength);
+            }
+
+            ImGui.SameLine();
+
+            if (ImGui.Button("Remove length"))
+            {
+                controller.RemoveSelectedEdgeLength();
+            }
         }
     }
 }

@@ -1,42 +1,53 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
 namespace ShapeShifter.Geometry
 {
     public static class Bresenham
     {
-        public static IEnumerable<(int X, int Y)> Rasterize(int x0, int y0, int x1, int y1)
+        public static IEnumerable<(int X, int Y)> Rasterize(int x1,int y1,int x2,int y2)
         {
-            if(x0>x1 || (x0==x1 && y0>y1))
+            // Swap axes for steep lines.
+            bool steep = Math.Abs(y2 - y1) > Math.Abs(x2 - x1);
+
+            if (steep)
             {
-                (x0,x1)=(x1,x0);
-                (y0,y1)=(y1,y0);
+                (x1, y1) = (y1, x1);
+                (x2, y2) = (y2, x2);
             }
-            int dx = Math.Abs(x1-x0);
-            int dy = -Math.Abs(y1-y0);
-            int stepX = x0 < x1 ? 1 : -1;
-            int stepY = y0 < y1 ? 1 : -1;
-            int error = dx + dy;
-            while (true)
+
+            // Process the transformed segment from left to right.
+            if (x1 > x2)
             {
-                yield return (x0,y0);
-                if(x0==x1 && y0==y1)
+                (x1, x2) = (x2, x1);
+                (y1, y2) = (y2, y1);
+            }
+
+            int dx = x2 - x1;
+            int dy = Math.Abs(y2 - y1);
+            int stepY = y1 < y2 ? 1 : -1;
+
+            int d = 2 * dy - dx;
+            int incrE = 2 * dy;
+            int incrNE = 2 * (dy - dx);
+
+            int x = x1;
+            int y = y1;
+
+            yield return steep ? (y, x) : (x, y);
+
+            while (x < x2)
+            {
+                if (d < 0)
                 {
-                    yield break;
+                    d += incrE;
                 }
-                int doubledError = 2*error;
-                if(doubledError >= dy)
+                else
                 {
-                    error += dy;
-                    x0 += stepX;
+                    d += incrNE;
+                    y += stepY;
                 }
-                if (doubledError <= dx)
-                {
-                    error += dx;
-                    y0 += stepY;
-                }
+
+                x++;
+
+                yield return steep ? (y, x) : (x, y);
             }
         }
     }

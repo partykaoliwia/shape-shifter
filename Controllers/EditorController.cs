@@ -1,6 +1,8 @@
 using System.Numerics;
+using ShapeShifter.Editing;
 using ShapeShifter.Geometry;
 using ShapeShifter.Models;
+using ShapeShifter.Models.Constraints;
 
 namespace ShapeShifter.Controllers
 {
@@ -9,6 +11,7 @@ namespace ShapeShifter.Controllers
         private const float VertexHitRadius = 8f;
         private const float EdgeHitRadius = 6f;
         private readonly Scene scene;
+        private readonly GeometryEditor geometryEditor;
 
         private Vertex? draggedVertex;
         private Polygon? draggedPolygon;
@@ -21,11 +24,13 @@ namespace ShapeShifter.Controllers
 
         private readonly List<Edge> selectedEdges = new();
         public IReadOnlyList<Edge> SelectedEdges => selectedEdges;
+        public Edge? SelectedEdge => selectedEdges.Count == 1 ? selectedEdges[0] : null;
 
         public bool IsDragging => draggedVertex != null || draggedPolygon != null;
         public EditorController(Scene scene)
         {
             this.scene = scene;
+            geometryEditor = new GeometryEditor(scene);
         }
 
         public void UpdatePointer(Vector2 mousePosition, bool leftPressed, bool leftDown, bool pointerAvailable, bool addAnother)
@@ -40,7 +45,7 @@ namespace ShapeShifter.Controllers
 
             if (draggedVertex != null)
             {
-                draggedVertex.ChangePosition(mousePosition);
+                geometryEditor.MoveVertexTo(draggedVertex, mousePosition);
                 return;
             }
 
@@ -69,7 +74,7 @@ namespace ShapeShifter.Controllers
                 }
 
                 draggedVertex = HoveredVertex;
-                draggedVertex.ChangePosition(mousePosition);
+                geometryEditor.MoveVertexTo(draggedVertex, mousePosition);
             }
             else if (HoveredEdge != null)
             {
@@ -94,6 +99,7 @@ namespace ShapeShifter.Controllers
             if (HoveredPolygon.SplitEdge(HoveredEdge))
             {
                 RemoveInvalidSelections();
+                scene.RemoveInvalidConstraints();
                 StatusMessage = "Vertex added.";
                 UpdateHover(previousMousePosition);
             }
@@ -107,13 +113,63 @@ namespace ShapeShifter.Controllers
             if (HoveredPolygon.TryRemoveVertex(HoveredVertex))
             {
                 RemoveInvalidSelections();
-                StatusMessage = "Vertex deleted.";
+                scene.RemoveInvalidConstraints();
                 UpdateHover(previousMousePosition);
+                StatusMessage = "Vertex deleted.";
             }
             else
             {
                 StatusMessage = "A polygon must have at least 3 vertices.";
             }
+        }
+        public EdgeLengthConstraint? GetSelectedLengthConstraint()
+        {
+            var edge = SelectedEdge;
+            return edge == null ? null : scene.GetLengthConstraint(edge);
+        }
+        public void SetSelectedEdgeLength(float targetLength)
+        {
+            var edge = SelectedEdge;
+
+            if (IsDragging || edge == null)
+            {
+                StatusMessage = "Select exactly one edge and finish dragging.";
+                return;
+            }
+
+            if (!float.IsFinite(targetLength) || targetLength <= 0f)
+            {
+                StatusMessage = "Length must be a positive, finite number.";
+                return;
+            }
+
+            if (geometryEditor.TrySetLength(edge, targetLength))
+            {
+                StatusMessage = "Length constraint applied.";
+            }
+            else
+            {
+                StatusMessage = "Could not satisfy the requested length. " + "The previous geometry and constraints were preserved.";
+            }
+        }
+        public void RemoveSelectedEdgeLength()
+        {
+            if (IsDragging || SelectedEdge == null)
+            {
+                StatusMessage = "Select exactly one edge and finish dragging.";
+                return;
+            }
+
+            var constraint = GetSelectedLengthConstraint();
+
+            if (constraint == null)
+            {
+                StatusMessage = "The selected edge has no length constraint.";
+                return;
+            }
+
+            scene.RemoveConstraint(constraint);
+            StatusMessage = "Length constraint removed.";
         }
         public void SelectEdge(Edge edge, bool addAnother)
         {

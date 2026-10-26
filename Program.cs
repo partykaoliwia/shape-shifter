@@ -58,7 +58,7 @@ namespace ShapeShifter
                         controller.DeleteHoveredVertex();
                     }
                 }
-                panel.Draw(controller.StatusMessage, ref lineAlgorithm);
+                panel.Draw(controller, ref lineAlgorithm);
                 renderer.Draw(scene, controller.HoveredVertex, controller.HoveredEdge, controller.HoveredPolygon,lineAlgorithm,controller.SelectedEdges);
                 rlImGui.End();
                 Raylib.EndDrawing();
