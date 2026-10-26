@@ -1,6 +1,6 @@
 using ShapeShifter.Models;
 
-namespace ShapeShifter.Editing
+namespace ShapeShifter.Editing.Interaction
 {
     public sealed class HitTestResult
     {

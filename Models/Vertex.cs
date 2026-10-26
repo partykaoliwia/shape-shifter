@@ -4,16 +4,15 @@ namespace ShapeShifter.Models
 {
     public class Vertex
     {
-        private Vector2 position;
-        public Vector2 Position { get => position;}
-        public Vertex(Vector2 pos)
+        public Vector2 Position { get; private set; }
+        public Vertex(Vector2 position)
         {
-            position=pos;
+            Position=position;
         }
 
-        public void MoveTo(Vector2 position)
+        public void MoveTo(Vector2 newPosition)
         {
-            this.position = position;       
+            Position = newPosition;       
         }
     }
 }

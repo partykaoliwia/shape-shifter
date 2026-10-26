@@ -5,10 +5,6 @@ namespace ShapeShifter.Controllers
 {
     public partial class EditorController
     {
-        private BezierControlPoint? draggedControlPoint;
-
-        public BezierControlPoint? HoveredControlPoint => hoveredElement?.ControlPoint;
-
         public void SetSelectedEdgeBezier(bool enabled)
         {
             var edge = SelectedEdge;
@@ -36,7 +32,5 @@ namespace ShapeShifter.Controllers
 
             UpdateHover(previousMousePosition);
         }
-
-    
     }
 }

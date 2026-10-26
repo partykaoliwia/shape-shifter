@@ -2,7 +2,7 @@ using System.Numerics;
 using ShapeShifter.Geometry;
 using ShapeShifter.Models;
 
-namespace ShapeShifter.Editing
+namespace ShapeShifter.Editing.Interaction
 {
     public sealed class SceneHitTester
     {
@@ -86,7 +86,7 @@ namespace ShapeShifter.Editing
             {
                 foreach (var edge in polygon.Edges)
                 {
-                    float distanceSquared = EdgeGeometry.DistanceSquared(edge, position);
+                    float distanceSquared = EdgeGeometry.DistanceToEdgeSquared(edge, position);
 
                     if (distanceSquared <= bestDistanceSquared)
                     {

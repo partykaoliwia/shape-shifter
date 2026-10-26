@@ -5,7 +5,7 @@ namespace ShapeShifter.Geometry
 {
     public static class EdgeGeometry
     {
-        public static float DistanceSquared(Edge edge, Vector2 position)
+        public static float DistanceToEdgeSquared(Edge edge, Vector2 position)
         {
             var segment = edge.Bezier;
 

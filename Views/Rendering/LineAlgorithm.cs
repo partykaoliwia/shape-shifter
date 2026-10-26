@@ -1,4 +1,4 @@
-namespace ShapeShifter.Rendering
+namespace ShapeShifter.Views.Rendering
 {
     public enum LineAlgorithm
     {

@@ -2,7 +2,7 @@ using System.Numerics;
 using ShapeShifter.Models;
 using ShapeShifter.Models.Constraints;
 
-namespace ShapeShifter.Geometry
+namespace ShapeShifter.Editing.Constraints
 {
     public class ConstraintSolver
     {

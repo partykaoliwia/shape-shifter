@@ -23,7 +23,7 @@ namespace ShapeShifter.Models
             }
         }
 
-        public bool SplitEdge(Edge edge)
+        public bool TrySplitEdge(Edge edge)
         {
             int index = edges.IndexOf(edge);
 

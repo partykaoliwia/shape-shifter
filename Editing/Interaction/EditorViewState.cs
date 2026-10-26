@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using ShapeShifter.Models;
 
-namespace ShapeShifter.Editing
+namespace ShapeShifter.Editing.Interaction
 {
-    public sealed record EditorState(
+    public sealed record EditorViewState(
         HitTestResult? HoveredElement,
         IReadOnlyList<Edge> SelectedEdges);
 }

@@ -1,16 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Threading.Tasks;
 using ImGuiNET;
 using Raylib_cs;
 using rlImGui_cs;
 using ShapeShifter.Controllers;
-using ShapeShifter.Rendering;
+using ShapeShifter.Editing.Interaction;
 using ShapeShifter.Setup;
 using ShapeShifter.Views;
-using ShapeShifter.Editing;
+using ShapeShifter.Views.Rendering;
 
 namespace ShapeShifter
 {
@@ -47,7 +42,7 @@ namespace ShapeShifter
                 var isLeftPressed = focused && Raylib.IsMouseButtonPressed(MouseButton.Left);
                 var isLeftDown = focused && Raylib.IsMouseButtonDown(MouseButton.Left);
                 var extendSelection = keyboardAvailable && (Raylib.IsKeyDown(KeyboardKey.LeftControl) || Raylib.IsKeyDown(KeyboardKey.RightControl));
-                var input = new MouseInput(Position: mousePosition, LeftPressed: isLeftPressed, LeftDown: isLeftDown, MouseAvailable:isMouseAvailable,ExtendSelection: extendSelection);
+                var input = new MouseInput(Position: mousePosition, LeftPressed: isLeftPressed, LeftDown: isLeftDown, CanInteractWithScene:isMouseAvailable,ExtendSelection: extendSelection);
                 controller.UpdateMouse(input);
                 if (isMouseAvailable && keyboardAvailable)
                 {
@@ -61,7 +56,7 @@ namespace ShapeShifter
                     }
                 }
                 panel.Draw(controller, ref lineAlgorithm);
-                renderer.Draw(scene,controller.GetState(),lineAlgorithm);
+                renderer.Draw(scene,controller.GetViewState(),lineAlgorithm);
                 rlImGui.End();
                 Raylib.EndDrawing();
             }

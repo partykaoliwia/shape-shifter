@@ -1,5 +1,5 @@
 using System.Numerics;
-using ShapeShifter.Geometry;
+using ShapeShifter.Editing.Constraints;
 using ShapeShifter.Models;
 using ShapeShifter.Models.Constraints;
 
@@ -111,7 +111,7 @@ namespace ShapeShifter.Editing
                 return false;
             }
 
-            if (!polygon.SplitEdge(edge))
+            if (!polygon.TrySplitEdge(edge))
             {
                 return false;
             }
