@@ -8,7 +8,7 @@ namespace ShapeShifter.Editing
     public class GeometryEditor
     {
         private readonly Scene scene;
-        private readonly LengthConstraintSolver solver = new();
+        private readonly ConstraintSolver solver = new();
 
         public GeometryEditor(Scene scene)
         {
@@ -22,16 +22,18 @@ namespace ShapeShifter.Editing
                 return false;
             }
 
-            var newConstraint = new EdgeLengthConstraint(edge, targetLength);
+            var previous = scene.GetLengthConstraint(edge);
+            var replacement = new EdgeLengthConstraint(edge, targetLength);
 
-            var constraints = GetLengthConstraints()
-                .Where(constraint => constraint.Edge != edge)
-                .Append(newConstraint)
+            var constraints = scene.Constraints
+                .Where(constraint => !ReferenceEquals(constraint, previous))
+                .Append(replacement)
                 .ToArray();
 
             var positions = CapturePositions();
+            var fixedVertices = new HashSet<Vertex> { edge.Start };
 
-            if (!solver.TrySolve(constraints, positions, edge.Start))
+            if (!solver.TrySolve(constraints, positions, fixedVertices))
             {
                 return false;
             }
@@ -42,34 +44,92 @@ namespace ShapeShifter.Editing
             return true;
         }
 
+        public bool TryAddPerpendicular(Edge first, Edge second)
+        {
+            if (first == second
+                || !scene.ContainsEdge(first)
+                || !scene.ContainsEdge(second))
+            {
+                return false;
+            }
+
+            if (scene.GetPerpendicularConstraint(first, second) is not null)
+            {
+                return true;
+            }
+
+            var constraint = new PerpendicularConstraint(first, second);
+
+            var constraints = scene.Constraints
+                .Append(constraint)
+                .ToArray();
+
+            var positions = CapturePositions();
+            var fixedVertices = new HashSet<Vertex> { first.Start };
+
+            if (!solver.TrySolve(constraints, positions, fixedVertices))
+            {
+                return false;
+            }
+
+            scene.AddPerpendicularConstraint(first, second);
+            ApplyPositions(positions);
+
+            return true;
+        }
+
         public void MoveVertexTo(Vertex vertex, Vector2 position)
         {
-            var constraints = GetLengthConstraints();
+            var targets = new Dictionary<Vertex, Vector2>
+            {
+                [vertex] = position
+            };
+
+            ApplyMove(targets, position - vertex.Position);
+        }
+
+        public void MovePolygonBy(Polygon polygon, Vector2 offset)
+        {
+            var targets = polygon.Edges
+                .Select(edge => edge.Start)
+                .Distinct()
+                .ToDictionary(
+                    vertex => vertex,
+                    vertex => vertex.Position + offset);
+
+            ApplyMove(targets, offset);
+        }
+
+        private void ApplyMove(
+            Dictionary<Vertex, Vector2> targets,
+            Vector2 offset)
+        {
+            var constraints = scene.Constraints.ToArray();
             var positions = CapturePositions();
+            var fixedVertices = targets.Keys.ToHashSet();
 
-            Vector2 offset = position - vertex.Position;
-            positions[vertex] = position;
+            foreach (var target in targets)
+            {
+                positions[target.Key] = target.Value;
+            }
 
-            if (solver.TrySolve(constraints, positions, vertex))
+            if (solver.TrySolve(constraints, positions, fixedVertices))
             {
                 ApplyPositions(positions);
                 return;
             }
 
-            // Translate the constrained component if local solving fails.
-            foreach (var connectedVertex in GetConnectedVertices(vertex, constraints))
+            // Translate the connected component without changing its shape.
+            foreach (var vertex in GetConnectedVertices(
+                targets.Keys, constraints))
             {
-                connectedVertex.ChangePosition(connectedVertex.Position + offset);
+                vertex.ChangePosition(vertex.Position + offset);
             }
 
-            vertex.ChangePosition(position);
-        }
-
-        private EdgeLengthConstraint[] GetLengthConstraints()
-        {
-            return scene.Constraints
-                .OfType<EdgeLengthConstraint>()
-                .ToArray();
+            foreach (var target in targets)
+            {
+                target.Key.ChangePosition(target.Value);
+            }
         }
 
         private Dictionary<Vertex, Vector2> CapturePositions()
@@ -81,7 +141,8 @@ namespace ShapeShifter.Editing
                 .ToDictionary(vertex => vertex, vertex => vertex.Position);
         }
 
-        private static void ApplyPositions(IReadOnlyDictionary<Vertex, Vector2> positions)
+        private static void ApplyPositions(
+            IReadOnlyDictionary<Vertex, Vector2> positions)
         {
             foreach (var entry in positions)
             {
@@ -89,24 +150,35 @@ namespace ShapeShifter.Editing
             }
         }
 
-        private static HashSet<Vertex> GetConnectedVertices(Vertex vertex, IReadOnlyList<EdgeLengthConstraint> constraints)
+        private static HashSet<Vertex> GetConnectedVertices(
+            IEnumerable<Vertex> seeds,
+            IReadOnlyList<IGeometricConstraint> constraints)
         {
-            var connected = new HashSet<Vertex> { vertex };
+            var connected = seeds.ToHashSet();
+
+            var groups = constraints
+                .Select(constraint => constraint.AffectedEdges
+                    .SelectMany(edge => new[] { edge.Start, edge.End })
+                    .Distinct()
+                    .ToArray())
+                .ToArray();
+
             bool changed;
 
             do
             {
                 changed = false;
 
-                foreach (var constraint in constraints)
+                foreach (var group in groups)
                 {
-                    Vertex start = constraint.Edge.Start;
-                    Vertex end = constraint.Edge.End;
-
-                    if (connected.Contains(start) || connected.Contains(end))
+                    if (!group.Any(connected.Contains))
                     {
-                        changed |= connected.Add(start);
-                        changed |= connected.Add(end);
+                        continue;
+                    }
+
+                    foreach (var vertex in group)
+                    {
+                        changed |= connected.Add(vertex);
                     }
                 }
             }

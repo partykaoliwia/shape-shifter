@@ -51,7 +51,7 @@ namespace ShapeShifter.Controllers
 
             if (draggedPolygon != null)
             {
-                draggedPolygon.MoveBy(offset);
+                geometryEditor.MovePolygonBy(draggedPolygon, offset);
                 return;
             }
 
@@ -89,6 +89,64 @@ namespace ShapeShifter.Controllers
             {
                 selectedEdges.Clear();
             }
+        }
+        public PerpendicularConstraint? GetSelectedPerpendicularConstraint()
+        {
+            if (selectedEdges.Count != 2)
+            {
+                return null;
+            }
+
+            return scene.GetPerpendicularConstraint(
+                selectedEdges[0],
+                selectedEdges[1]);
+        }
+
+        public void AddSelectedPerpendicular()
+        {
+            if (IsDragging || selectedEdges.Count != 2)
+            {
+                StatusMessage = "Select exactly two edges and finish dragging.";
+                return;
+            }
+
+            if (GetSelectedPerpendicularConstraint() is not null)
+            {
+                StatusMessage = "These edges are already constrained.";
+                return;
+            }
+
+            if (geometryEditor.TryAddPerpendicular(
+                selectedEdges[0], selectedEdges[1]))
+            {
+                StatusMessage = "Perpendicular constraint applied.";
+            }
+            else
+            {
+                StatusMessage =
+                    "Could not apply perpendicularity. "
+                    + "Previous geometry and constraints were preserved.";
+            }
+        }
+
+        public void RemoveSelectedPerpendicular()
+        {
+            if (IsDragging || selectedEdges.Count != 2)
+            {
+                StatusMessage = "Select exactly two edges and finish dragging.";
+                return;
+            }
+
+            var constraint = GetSelectedPerpendicularConstraint();
+
+            if (constraint is null)
+            {
+                StatusMessage = "These edges have no perpendicular constraint.";
+                return;
+            }
+
+            scene.RemoveConstraint(constraint);
+            StatusMessage = "Perpendicular constraint removed.";
         }
         public void InsertVertexAtHoveredEdge()
         {

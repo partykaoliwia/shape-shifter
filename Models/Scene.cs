@@ -53,5 +53,35 @@ namespace ShapeShifter.Models
                 .OfType<EdgeLengthConstraint>()
                 .FirstOrDefault(constraint => constraint.Edge == edge);
         }
+        public PerpendicularConstraint? GetPerpendicularConstraint(Edge first, Edge second)
+        {
+            return constraints
+                .OfType<PerpendicularConstraint>()
+                .FirstOrDefault(constraint => constraint.Matches(first, second));
+        }
+
+        public IEnumerable<PerpendicularConstraint> GetPerpendicularConstraints()
+        {
+            return constraints.OfType<PerpendicularConstraint>();
+        }
+
+        public void AddPerpendicularConstraint(Edge first, Edge second)
+        {
+            ArgumentNullException.ThrowIfNull(first);
+            ArgumentNullException.ThrowIfNull(second);
+
+            if (!ContainsEdge(first) || !ContainsEdge(second))
+            {
+                throw new ArgumentException(
+                    "Both edges must belong to this scene.");
+            }
+
+            if (GetPerpendicularConstraint(first, second) is not null)
+            {
+                return;
+            }
+
+            constraints.Add(new PerpendicularConstraint(first, second));
+        }
     }
 }

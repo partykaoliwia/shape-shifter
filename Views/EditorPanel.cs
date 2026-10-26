@@ -18,6 +18,7 @@ namespace ShapeShifter.Views
         {
             if (ImGui.Begin("Editing"))
             {
+                DrawPerpendicularEditor(controller);
                 DrawLengthEditor(controller);
                 ImGui.Text("Drag a vertex with LMB to move it.");
                 ImGui.Text("Drag an edge with LMB to move the polygon.");
@@ -46,6 +47,38 @@ namespace ShapeShifter.Views
                 }
             }
             ImGui.End();
+        }
+        private void DrawPerpendicularEditor(EditorController controller)
+        {
+            ImGui.Separator();
+            ImGui.Text("Perpendicularity");
+
+            if (controller.SelectedEdges.Count != 2)
+            {
+                ImGui.Text("Select exactly two edges using Ctrl + click.");
+                return;
+            }
+
+            if (controller.IsDragging)
+            {
+                ImGui.Text("Finish dragging to edit the constraint.");
+                return;
+            }
+
+            if (controller.GetSelectedPerpendicularConstraint() is not null)
+            {
+                ImGui.Text("Perpendicular constraint active.");
+            }
+
+            if (ImGui.Button("Make perpendicular"))
+            {
+                controller.AddSelectedPerpendicular();
+            }
+
+            if (ImGui.Button("Remove perpendicular"))
+            {
+                controller.RemoveSelectedPerpendicular();
+            }
         }
         private void DrawLengthEditor(EditorController controller)
         {
