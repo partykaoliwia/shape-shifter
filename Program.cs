@@ -1,8 +1,10 @@
+using System.Numerics;
 using ImGuiNET;
 using Raylib_cs;
 using rlImGui_cs;
 using ShapeShifter.Controllers;
 using ShapeShifter.Editing.Interaction;
+using ShapeShifter.Models;
 using ShapeShifter.Setup;
 using ShapeShifter.Views;
 using ShapeShifter.Views.Rendering;
@@ -21,6 +23,17 @@ namespace ShapeShifter
             var controller = new EditorController(scene);
             var panel = new EditorPanel();
             var lineAlgorithm = LineAlgorithm.Library;
+
+            var arcStart = new Vertex(new Vector2(650f, 300f));
+var arcEnd = new Vertex(new Vector2(850f, 300f));
+
+arcStart.SetContinuity(ContinuityType.G0);
+arcEnd.SetContinuity(ContinuityType.G0);
+
+var testArc = new CircularArcSegment(
+    arcStart,
+    arcEnd,
+    clockwise: true);
 
             
             Raylib.InitWindow(screenWidth,screenHeight,"ShapeShifter");
@@ -57,6 +70,16 @@ namespace ShapeShifter
                 }
                 panel.Draw(controller, ref lineAlgorithm);
                 renderer.Draw(scene,controller.GetViewState(),lineAlgorithm);
+
+                SceneRenderer.DrawCircularArc(
+    testArc,
+    Color.Blue,
+    lineAlgorithm);
+
+Raylib.DrawCircleV(arcStart.Position, 4f, Color.Orange);
+Raylib.DrawCircleV(arcEnd.Position, 4f, Color.Orange);
+
+
                 rlImGui.End();
                 Raylib.EndDrawing();
             }
