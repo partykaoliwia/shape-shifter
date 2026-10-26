@@ -55,6 +55,12 @@ namespace ShapeShifter.Editing.Constraints
                                 fixedVertices,
                                 controlTarget),
 
+                        ArcGeometryConstraint arcGeometry =>
+                            ProjectArcGeometry(
+                                arcGeometry,
+                                positions,
+                                fixedVertices),
+
                         _ => false
                     };
 
@@ -111,6 +117,9 @@ namespace ShapeShifter.Editing.Constraints
                         continuity,
                         positions,
                         controlTarget);
+
+                case ArcGeometryConstraint arcGeometry:
+                    return IsArcGeometrySatisfied(arcGeometry, positions);
 
                 default:
                     return false;

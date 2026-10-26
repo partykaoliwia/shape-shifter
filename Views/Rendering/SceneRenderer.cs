@@ -50,6 +50,7 @@ namespace ShapeShifter.Views.Rendering
             DrawBezierHandles(scene, hovered?.ControlPoint);
             DrawLengthLabels(scene);
             DrawPerpendicularLabels(scene);
+            DrawContinuityLabels(scene);
         }
         
         private static void DrawLine(Vector2 start, Vector2 end, Color color, LineAlgorithm lineAlgorithm)

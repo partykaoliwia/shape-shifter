@@ -26,11 +26,17 @@ public partial class EditorPanel
             return;
         }
 
-        if (!controller.SelectedVertexHasBezier)
+        bool hasArc = controller.SelectedVertexHasArc;
+
+        if (hasArc)
         {
             ImGui.TextWrapped(
-                "This setting will apply when an adjacent edge "
-                + "becomes a Bezier segment.");
+                "An arc supports G0/G1, with G1 at only one endpoint.");
+        }
+        else if (!controller.SelectedVertexHasBezier)
+        {
+            ImGui.TextWrapped(
+                "This setting applies when an adjacent edge becomes a curve.");
         }
 
         if (ImGui.RadioButton(
@@ -47,9 +53,10 @@ public partial class EditorPanel
             controller.SetSelectedVertexContinuity(ContinuityType.G1);
         }
 
-        if (ImGui.RadioButton(
-            "C1 - tangent vector",
-            vertex.Continuity == ContinuityType.C1))
+        if (!hasArc
+            && ImGui.RadioButton(
+                "C1 - tangent vector",
+                vertex.Continuity == ContinuityType.C1))
         {
             controller.SetSelectedVertexContinuity(ContinuityType.C1);
         }

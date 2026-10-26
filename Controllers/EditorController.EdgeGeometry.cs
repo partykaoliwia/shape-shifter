@@ -15,11 +15,10 @@ public partial class EditorController
         }
 
         if (geometryType == EdgeGeometryType.CircularArc
-            && (edge.Start.Continuity != ContinuityType.G0
-                || edge.End.Continuity != ContinuityType.G0))
+            && !CircularArcSegment.SupportsContinuity(edge.Start, edge.End))
         {
             StatusMessage =
-                "Set G0 continuity at both endpoints before enabling an arc.";
+                "An arc requires G0/G1 continuity, with G1 at only one endpoint.";
             return;
         }
 

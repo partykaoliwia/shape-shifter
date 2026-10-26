@@ -6,9 +6,14 @@ namespace ShapeShifter.Editing;
 public partial class GeometryEditor
 {
     public bool TrySetContinuity(
-    Vertex vertex,
-    ContinuityType continuity)
+        Vertex vertex,
+        ContinuityType continuity)
     {
+        if (!Enum.IsDefined(continuity))
+        {
+            return false;
+        }
+
         var incidentEdges = scene.Polygons
             .SelectMany(polygon => polygon.Edges)
             .Where(edge => edge.Start == vertex || edge.End == vertex)
@@ -19,14 +24,19 @@ public partial class GeometryEditor
             return false;
         }
 
-        if (continuity != ContinuityType.G0
-            && incidentEdges.Any(edge => edge.Arc != null))
-        {
-            return false;
-        }
-
         var previous = vertex.Continuity;
         vertex.SetContinuity(continuity);
+
+        bool invalidArc = incidentEdges.Any(edge =>
+            edge.Arc != null
+            && !CircularArcSegment.SupportsContinuity(
+                edge.Start, edge.End));
+
+        if (invalidArc)
+        {
+            vertex.SetContinuity(previous);
+            return false;
+        }
 
         if (TryApplyCurrentGeometry(scene.Constraints))
         {
@@ -42,6 +52,7 @@ public partial class GeometryEditor
     {
         return constraints
             .Concat(GetContinuityConstraints())
+            .Concat(GetArcGeometryConstraints())
             .ToArray();
     }
 
@@ -60,18 +71,25 @@ public partial class GeometryEditor
 
                 var incoming = polygon.Edges.First(
                     edge => edge.End == vertex);
-                if (incoming.Arc != null || outgoing.Arc != null)
-                {
-                    continue;
-                }
 
-                if (incoming.Bezier == null && outgoing.Bezier == null)
+                if (incoming.IsLine && outgoing.IsLine)
                 {
                     continue;
                 }
 
                 yield return new ContinuityConstraint(
                     vertex, incoming, outgoing);
+            }
+        }
+    }
+
+    private IEnumerable<ArcGeometryConstraint> GetArcGeometryConstraints()
+    {
+        foreach (var edge in scene.Polygons.SelectMany(p => p.Edges))
+        {
+            if (edge.Arc != null)
+            {
+                yield return new ArcGeometryConstraint(edge);
             }
         }
     }

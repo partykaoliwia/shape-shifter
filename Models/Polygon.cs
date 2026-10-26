@@ -27,9 +27,23 @@ namespace ShapeShifter.Models
         {
             int index = edges.IndexOf(edge);
 
-            if (index < 0 || edge.Arc != null)
+            if (index < 0)
             {
                 return false;
+            }
+            if (edge.Arc is { } arc)
+            {
+                if (!arc.TryGetGeometry(out var geometry))
+                {
+                    return false;
+                }
+
+                var midpointVertex = new Vertex(geometry.PointAt(0.5f));
+
+                edges[index] = new Edge(edge.Start, midpointVertex);
+                edges.Insert(index + 1, new Edge(midpointVertex, edge.End));
+
+                return true;
             }
             var segment = edge.Bezier;
 

@@ -18,6 +18,7 @@ namespace ShapeShifter.Views
         {
             if (ImGui.Begin("Editing"))
             {
+                DrawHelpButton();
                 DrawPerpendicularEditor(controller);
                 DrawLengthEditor(controller);
                 DrawEdgeGeometryEditor(controller);
@@ -49,6 +50,7 @@ namespace ShapeShifter.Views
                 }
             }
             ImGui.End();
+            DrawHelpWindow();
         }
         private void DrawPerpendicularEditor(EditorController controller)
         {

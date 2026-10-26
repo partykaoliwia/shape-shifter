@@ -18,8 +18,7 @@ public partial class GeometryEditor
         }
 
         if (geometryType == EdgeGeometryType.CircularArc
-            && (edge.Start.Continuity != ContinuityType.G0
-                || edge.End.Continuity != ContinuityType.G0))
+            && !CircularArcSegment.SupportsContinuity(edge.Start, edge.End))
         {
             return false;
         }

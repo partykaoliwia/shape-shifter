@@ -63,5 +63,30 @@ namespace ShapeShifter.Views.Rendering
                 pairNumber++;
             }
         }
+        private static void DrawContinuityLabels(Scene scene)
+        {
+            foreach (var polygon in scene.Polygons)
+            {
+                foreach (var outgoing in polygon.Edges)
+                {
+                    var vertex = outgoing.Start;
+
+                    var incoming = polygon.Edges.First(
+                        edge => edge.End == vertex);
+
+                    if (incoming.IsLine && outgoing.IsLine)
+                    {
+                        continue;
+                    }
+
+                    Raylib.DrawText(
+                        vertex.Continuity.ToString(),
+                        (int)MathF.Round(vertex.Position.X) + 8,
+                        (int)MathF.Round(vertex.Position.Y) - 18,
+                        12,
+                        Color.DarkGray);
+                }
+            }
+        }
     }
 }

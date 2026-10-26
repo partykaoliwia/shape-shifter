@@ -5,7 +5,8 @@ namespace ShapeShifter.Editing;
 
 internal static class GeometrySnapshot
 {
-    public static Dictionary<IGeometryVariable, Vector2> Capture(Scene scene)
+    public static Dictionary<IGeometryVariable, Vector2> Capture(
+        Scene scene)
     {
         var values = new Dictionary<IGeometryVariable, Vector2>();
 
@@ -14,29 +15,37 @@ internal static class GeometrySnapshot
             values.TryAdd(edge.Start, edge.Start.Position);
             values.TryAdd(edge.End, edge.End.Position);
 
-            var segment = edge.Bezier;
-            if (segment == null)
+            if (edge.Arc is { } arc)
             {
-                continue;
+                values.TryAdd(arc, arc.TangentDirection);
             }
 
-            values.TryAdd(segment.Control1, segment.Control1.Offset);
-            values.TryAdd(segment.Control2, segment.Control2.Offset);
+            if (edge.Bezier is { } bezier)
+            {
+                values.TryAdd(bezier.Control1, bezier.Control1.Offset);
+                values.TryAdd(bezier.Control2, bezier.Control2.Offset);
+            }
         }
 
         return values;
     }
 
-    public static void Apply(IReadOnlyDictionary<IGeometryVariable, Vector2> values)
+    public static void Apply(
+        IReadOnlyDictionary<IGeometryVariable, Vector2> values)
     {
         foreach (var vertex in values.Keys.OfType<Vertex>())
         {
             vertex.MoveTo(values[vertex]);
         }
 
-        foreach (var controlPoint in values.Keys.OfType<BezierControlPoint>())
+        foreach (var point in values.Keys.OfType<BezierControlPoint>())
         {
-            controlPoint.MoveTo(controlPoint.Anchor.Position + values[controlPoint]);
+            point.MoveTo(point.Anchor.Position + values[point]);
+        }
+
+        foreach (var arc in values.Keys.OfType<CircularArcSegment>())
+        {
+            arc.SetTangentDirection(values[arc]);
         }
     }
 }

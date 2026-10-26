@@ -35,6 +35,6 @@ public partial class EditorController
         StatusMessage = geometryEditor.TrySetContinuity(
             SelectedVertex, continuity)
                 ? $"Continuity set to {continuity}."
-                : "Cannot apply the requested continuity.";
+                : "Cannot apply continuity. Check arc endpoint settings and other constraints.";;
     }
 }

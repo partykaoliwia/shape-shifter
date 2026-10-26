@@ -7,55 +7,37 @@ public static class CircularArcPointGenerator
 {
     private const float TargetSampleSpacing = 4f;
     private const int MinSteps = 16;
-    private const int MaxSteps = 512;
+    private const int MaxSteps = 4096;
 
     public static IEnumerable<Vector2> GeneratePoints(
         CircularArcSegment arc)
     {
-        Vector2 start = arc.Start.Position;
-        Vector2 end = arc.End.Position;
-
-        Vector2 center = arc.Center;
-        float radius = arc.Radius;
-
-        yield return start;
-
-        if (radius <= 0.000001f)
+        if (!arc.TryGetGeometry(out var geometry))
         {
-            yield return end;
             yield break;
         }
 
-        Vector2 startDirection = start - center;
+        yield return arc.Start.Position;
 
-        float startAngle = MathF.Atan2(
-            startDirection.Y,
-            startDirection.X);
+        if (geometry.Radius <= 0.000001f)
+        {
+            yield return arc.End.Position;
+            yield break;
+        }
 
-        float sweepAngle = arc.Clockwise
-            ? MathF.PI
-            : -MathF.PI;
+        float arcLength =
+            MathF.Abs(geometry.SweepAngle) * geometry.Radius;
 
-        float arcLength = MathF.PI * radius;
-
-        int steps = Math.Clamp(
-            (int)MathF.Ceiling(arcLength / TargetSampleSpacing),
+        int steps = (int)Math.Clamp(
+            MathF.Ceiling(arcLength / TargetSampleSpacing),
             MinSteps,
             MaxSteps);
 
         for (int i = 1; i < steps; i++)
         {
-            float t = (float)i / steps;
-            float angle = startAngle + sweepAngle * t;
-
-            Vector2 direction = new(
-                MathF.Cos(angle),
-                MathF.Sin(angle));
-
-            yield return center + radius * direction;
+            yield return geometry.PointAt((float)i / steps);
         }
 
-        // Use the exact endpoint instead of its approximation.
-        yield return end;
+        yield return arc.End.Position;
     }
 }

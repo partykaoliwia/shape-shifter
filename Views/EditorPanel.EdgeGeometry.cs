@@ -57,7 +57,7 @@ public partial class EditorPanel
         }
 
         ImGui.TextWrapped(
-            "Circular arcs require G0 continuity at both endpoints.");
+            "Circular arcs support G0/G1, with G1 at only one endpoint.");
 
         ImGui.TextWrapped(
             "Changing geometry removes constraints involving this edge.");

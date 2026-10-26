@@ -16,6 +16,15 @@ public partial class ConstraintSolver
         IReadOnlyDictionary<IGeometryVariable, Vector2> positions,
         ControlPointTarget? controlTarget)
     {
+        if (edge.Arc is { } arc)
+        {
+            return new Tangent(
+                positions[arc],
+                new Dictionary<IGeometryVariable, float>
+                {
+                    [arc] = 1f
+                });
+        }
         if (edge.Bezier is not { } segment)
         {
             return new Tangent(
