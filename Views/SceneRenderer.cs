@@ -38,6 +38,43 @@ namespace ShapeShifter.Views
                     Raylib.DrawCircleV(edge.Start.Position, 5f, color);
                 }
             }
+            DrawLengthLabels(scene);
+        }
+        private static void DrawLengthLabels(Scene scene)
+        {
+            const int fontSize = 12;
+            const int padding = 2;
+            const int offset = 4;
+
+            foreach (var polygon in scene.Polygons)
+            {
+                foreach (var edge in polygon.Edges)
+                {
+                    var constraint = scene.GetLengthConstraint(edge);
+
+                    if (constraint == null)
+                    {
+                        continue;
+                    }
+
+                    Vector2 midpoint = (edge.Start.Position + edge.End.Position) / 2f;
+
+                    string text = $"L = {constraint.TargetLength:F2}";
+                    int textWidth = Raylib.MeasureText(text, fontSize);
+
+                    int x = (int)MathF.Round(midpoint.X) + offset;
+                    int y = (int)MathF.Round(midpoint.Y) - fontSize - offset;
+
+                    // Raylib.DrawRectangle(
+                    //     x - padding,
+                    //     y - padding,
+                    //     textWidth + 2 * padding,
+                    //     fontSize + 2 * padding,
+                    //     Color.White);
+
+                    Raylib.DrawText(text, x, y, fontSize, Color.DarkGray);
+                }
+            }
         }
         private static void DrawLine(Vector2 start, Vector2 end, Color color, LineAlgorithm lineAlgorithm)
         {
