@@ -45,7 +45,6 @@ namespace ShapeShifter.Views
         private static void DrawLengthLabels(Scene scene)
         {
             const int fontSize = 12;
-            //const int padding = 2;
             const int offset = 4;
 
             foreach (var polygon in scene.Polygons)
@@ -62,17 +61,9 @@ namespace ShapeShifter.Views
                     Vector2 midpoint = (edge.Start.Position + edge.End.Position) / 2f;
 
                     string text = $"L = {constraint.TargetLength:F2}";
-                    int textWidth = Raylib.MeasureText(text, fontSize);
 
                     int x = (int)MathF.Round(midpoint.X) + offset;
                     int y = (int)MathF.Round(midpoint.Y) - fontSize - offset;
-
-                    // Raylib.DrawRectangle(
-                    //     x - padding,
-                    //     y - padding,
-                    //     textWidth + 2 * padding,
-                    //     fontSize + 2 * padding,
-                    //     Color.White);
 
                     Raylib.DrawText(text, x, y, fontSize, Color.DarkGray);
                 }

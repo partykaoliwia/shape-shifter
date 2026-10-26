@@ -1,4 +1,5 @@
 using System.Numerics;
+using ShapeShifter.Editing;
 using ShapeShifter.Models;
 
 namespace ShapeShifter.Setup
@@ -33,7 +34,17 @@ namespace ShapeShifter.Setup
 
             float length = Vector2.Distance(edge.Start.Position,edge.End.Position);
             scene.SetLengthConstraint(edge, length);
-            scene.AddPerpendicularConstraint(polygon1.Edges[1],polygon2.Edges[1]);
+            var geometryEditor = new GeometryEditor(scene);
+
+            bool success = geometryEditor.TryAddPerpendicular(
+                polygon1.Edges[1],
+                polygon2.Edges[1]);
+
+            if (!success)
+            {
+                throw new InvalidOperationException( "Could not create the initial perpendicular constraint.");
+            }
+            
             return scene;
         }
     }

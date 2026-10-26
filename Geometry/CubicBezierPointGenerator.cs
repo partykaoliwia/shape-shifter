@@ -5,6 +5,9 @@ namespace ShapeShifter.Geometry
 {
     public static class CubicBezierPointGenerator
     {
+        private const float TargetSampleSpacing = 4f;
+        private const int MinSteps = 16;
+        private const int MaxSteps = 512;
         public static IEnumerable<Vector2> GeneratePoints(
             CubicBezierSegment segment)
         {
@@ -17,11 +20,8 @@ namespace ShapeShifter.Geometry
                 Vector2.Distance(v0, v1)
                 + Vector2.Distance(v1, v2)
                 + Vector2.Distance(v2, v3);
-
             int steps = Math.Clamp(
-                (int)MathF.Ceiling(controlPolygonLength / 4f),
-                16,
-                512);
+                (int)MathF.Ceiling(controlPolygonLength / TargetSampleSpacing),MinSteps,MaxSteps);
 
             Vector2 A0 = v0;
             Vector2 A1 = 3f * (v1 - v0);

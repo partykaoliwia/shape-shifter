@@ -79,7 +79,10 @@ namespace ShapeShifter.Editing
 
             return true;
         }
-
+        public void MoveControlPointTo(BezierControlPoint controlPoint,Vector2 position)
+        {
+            controlPoint.MoveTo(position);
+        }
         public void MoveVertexTo(Vertex vertex, Vector2 position)
         {
             var targets = new Dictionary<Vertex, Vector2>
@@ -100,6 +103,74 @@ namespace ShapeShifter.Editing
                     vertex => vertex.Position + offset);
 
             ApplyMove(targets, offset);
+        }
+        public bool TrySplitEdge(Polygon polygon, Edge edge)
+        {
+            if (!scene.Polygons.Contains(polygon))
+            {
+                return false;
+            }
+
+            if (!polygon.SplitEdge(edge))
+            {
+                return false;
+            }
+
+            scene.RemoveInvalidConstraints();
+            return true;
+        }
+
+        public bool TryRemoveVertex(Polygon polygon, Vertex vertex)
+        {
+            if (!scene.Polygons.Contains(polygon))
+            {
+                return false;
+            }
+
+            if (!polygon.TryRemoveVertex(vertex))
+            {
+                return false;
+            }
+
+            scene.RemoveInvalidConstraints();
+            return true;
+        }
+        public int ConvertEdgeToBezier(Edge edge)
+        {
+            EnsureEdgeBelongsToScene(edge);
+
+            var affectedConstraints = scene.Constraints
+                .Where(constraint => constraint.AffectedEdges.Contains(edge))
+                .ToArray();
+
+            edge.EnableBezier();
+
+            foreach (var constraint in affectedConstraints)
+            {
+                scene.RemoveConstraint(constraint);
+            }
+
+            return affectedConstraints.Length;
+        }
+
+        public void ConvertEdgeToLine(Edge edge)
+        {
+            EnsureEdgeBelongsToScene(edge);
+            edge.DisableBezier();
+        }
+
+        public bool RemoveConstraint(IGeometricConstraint constraint)
+        {
+            return scene.RemoveConstraint(constraint);
+        }
+        private void EnsureEdgeBelongsToScene(Edge edge)
+        {
+            if (!scene.ContainsEdge(edge))
+            {
+                throw new ArgumentException(
+                    "The edge does not belong to this scene.",
+                    nameof(edge));
+            }
         }
 
         private void ApplyMove(

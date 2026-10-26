@@ -22,13 +22,6 @@ namespace ShapeShifter.Models
                 edges.Add(edge);
             }
         }
-        public void MoveBy(Vector2 offset)
-        {
-            foreach (var edge in edges)
-            {
-                edge.Start.ChangePosition(edge.Start.Position + offset);
-            }
-        }
 
         public bool SplitEdge(Edge edge)
         {

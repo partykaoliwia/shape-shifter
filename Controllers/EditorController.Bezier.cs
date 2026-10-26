@@ -13,34 +13,24 @@ namespace ShapeShifter.Controllers
         {
             var edge = SelectedEdge;
 
-            if (IsDragging || edge is null)
+            if (IsDragging || edge == null)
             {
-                StatusMessage =
-                    "Select exactly one edge and finish dragging.";
+                StatusMessage = "Select exactly one edge and finish dragging.";
 
                 return;
             }
 
             if (enabled)
             {
-                var affectedConstraints = scene.Constraints
-                    .Where(constraint => constraint.AffectedEdges.Contains(edge))
-                    .ToArray();
+                int removedConstraintCount = geometryEditor.ConvertEdgeToBezier(edge);
 
-                edge.EnableBezier();
-
-                foreach (var constraint in affectedConstraints)
-                {
-                    scene.RemoveConstraint(constraint);
-                }
-
-                StatusMessage = affectedConstraints.Length > 0
+                StatusMessage = removedConstraintCount > 0
                     ? "Bezier enabled. Straight-edge constraints removed."
                     : "Bezier enabled.";
             }
             else
             {
-                edge.DisableBezier();
+                geometryEditor.ConvertEdgeToLine(edge);
                 StatusMessage = "Line segment enabled.";
             }
 

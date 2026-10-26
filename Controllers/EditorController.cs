@@ -44,7 +44,7 @@ namespace ShapeShifter.Controllers
             }
             if (draggedControlPoint != null)
             {
-                draggedControlPoint.MoveTo(mousePosition);
+                geometryEditor.MoveControlPointTo(draggedControlPoint,mousePosition);
                 return;
             }
 
@@ -77,7 +77,7 @@ namespace ShapeShifter.Controllers
                 if (!addAnother)
                 {
                     draggedControlPoint = HoveredControlPoint;
-                    draggedControlPoint.MoveTo(mousePosition);
+                    geometryEditor.MoveControlPointTo(draggedControlPoint,mousePosition);
                 }
 
                 return;
@@ -161,7 +161,7 @@ namespace ShapeShifter.Controllers
                 return;
             }
 
-            scene.RemoveConstraint(constraint);
+            geometryEditor.RemoveConstraint(constraint);
             StatusMessage = "Perpendicular constraint removed.";
         }
         public void InsertVertexAtHoveredEdge()
@@ -170,12 +170,13 @@ namespace ShapeShifter.Controllers
             {
                 return;
             }
-            if (HoveredPolygon.SplitEdge(HoveredEdge))
+            if (geometryEditor.TrySplitEdge(HoveredPolygon, HoveredEdge))
             {
                 RemoveInvalidSelections();
-                scene.RemoveInvalidConstraints();
-                StatusMessage = "Vertex added.";
                 UpdateHover(previousMousePosition);
+                UpdateBezierHover(previousMousePosition);
+
+                StatusMessage = "Vertex added.";
             }
         }
         public void DeleteHoveredVertex()
@@ -184,11 +185,12 @@ namespace ShapeShifter.Controllers
             {
                 return;
             }
-            if (HoveredPolygon.TryRemoveVertex(HoveredVertex))
+            if (geometryEditor.TryRemoveVertex(HoveredPolygon, HoveredVertex))
             {
                 RemoveInvalidSelections();
-                scene.RemoveInvalidConstraints();
                 UpdateHover(previousMousePosition);
+                UpdateBezierHover(previousMousePosition);
+
                 StatusMessage = "Vertex deleted.";
             }
             else
@@ -242,7 +244,7 @@ namespace ShapeShifter.Controllers
                 return;
             }
 
-            scene.RemoveConstraint(constraint);
+            geometryEditor.RemoveConstraint(constraint);
             StatusMessage = "Length constraint removed.";
         }
         public void SelectEdge(Edge edge, bool addAnother)
