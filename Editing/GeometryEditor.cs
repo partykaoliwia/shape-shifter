@@ -17,7 +17,7 @@ namespace ShapeShifter.Editing
 
         public bool TrySetLength(Edge edge, float targetLength)
         {
-            if (edge.Bezier != null || !scene.ContainsEdge(edge))
+            if (!edge.IsLine || !scene.ContainsEdge(edge))
             {
                 return false;
             }
@@ -46,8 +46,8 @@ namespace ShapeShifter.Editing
         public bool TryAddPerpendicular(Edge first, Edge second)
         {
             if (first == second
-                || first.Bezier !=  null
-                || second.Bezier != null
+                || !first.IsLine
+                || !second.IsLine
                 || !scene.ContainsEdge(first)
                 || !scene.ContainsEdge(second))
             {

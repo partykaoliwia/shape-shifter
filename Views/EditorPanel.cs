@@ -20,7 +20,7 @@ namespace ShapeShifter.Views
             {
                 DrawPerpendicularEditor(controller);
                 DrawLengthEditor(controller);
-                DrawBezierEditor(controller);
+                DrawEdgeGeometryEditor(controller);
                 DrawContinuityEditor(controller);
                 ImGui.Text("Drag a vertex with LMB to move it.");
                 ImGui.Text("Drag an edge with LMB to move the polygon.");
@@ -60,7 +60,7 @@ namespace ShapeShifter.Views
                 ImGui.Text("Select exactly two edges using Ctrl + click.");
                 return;
             }
-            if (controller.SelectedEdges.Any(edge => edge.Bezier != null))
+            if (controller.SelectedEdges.Any(edge => !edge.IsLine))
             {
                 ImGui.Text("Select two line segments.");
                 return;
@@ -69,6 +69,13 @@ namespace ShapeShifter.Views
             if (controller.IsDragging)
             {
                 ImGui.Text("Finish dragging to edit the constraint.");
+                return;
+            }
+            if (controller.SelectedVertexHasArc)
+            {
+                ImGui.Text("G0 - position");
+                ImGui.TextWrapped(
+                    "Circular arc endpoints use G0 continuity.");
                 return;
             }
 
@@ -100,7 +107,7 @@ namespace ShapeShifter.Views
                 ImGui.Text("Select exactly one edge.");
                 return;
             }
-            if (edge.Bezier != null)
+            if (!edge.IsLine)
             {
                 lengthEditorEdge = null;
                 ImGui.Text("Length constraints are available for line segments.");
@@ -132,6 +139,13 @@ namespace ShapeShifter.Views
             if (controller.IsDragging)
             {
                 ImGui.Text("Finish dragging to edit the constraint.");
+                return;
+            }
+            if (controller.SelectedVertexHasArc)
+            {
+                ImGui.Text("G0 - position");
+                ImGui.TextWrapped(
+                    "Circular arc endpoints use G0 continuity.");
                 return;
             }
 

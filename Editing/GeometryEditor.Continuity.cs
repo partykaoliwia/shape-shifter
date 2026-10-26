@@ -6,14 +6,21 @@ namespace ShapeShifter.Editing;
 public partial class GeometryEditor
 {
     public bool TrySetContinuity(
-        Vertex vertex,
-        ContinuityType continuity)
+    Vertex vertex,
+    ContinuityType continuity)
     {
-        bool belongsToScene = scene.Polygons
+        var incidentEdges = scene.Polygons
             .SelectMany(polygon => polygon.Edges)
-            .Any(edge => edge.Start == vertex);
+            .Where(edge => edge.Start == vertex || edge.End == vertex)
+            .ToArray();
 
-        if (!belongsToScene)
+        if (incidentEdges.Length == 0)
+        {
+            return false;
+        }
+
+        if (continuity != ContinuityType.G0
+            && incidentEdges.Any(edge => edge.Arc != null))
         {
             return false;
         }
@@ -53,6 +60,10 @@ public partial class GeometryEditor
 
                 var incoming = polygon.Edges.First(
                     edge => edge.End == vertex);
+                if (incoming.Arc != null || outgoing.Arc != null)
+                {
+                    continue;
+                }
 
                 if (incoming.Bezier == null && outgoing.Bezier == null)
                 {

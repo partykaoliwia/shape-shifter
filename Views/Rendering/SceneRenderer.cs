@@ -75,6 +75,12 @@ namespace ShapeShifter.Views.Rendering
             Color color,
             LineAlgorithm algorithm)
         {
+            var arc = edge.Arc;
+            if (arc!=null)
+            {
+                DrawCircularArc(arc, color, algorithm);
+                return;
+            }
             var segment = edge.Bezier;
 
             if (segment == null)

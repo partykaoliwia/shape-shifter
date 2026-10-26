@@ -27,7 +27,7 @@ namespace ShapeShifter.Models
         {
             int index = edges.IndexOf(edge);
 
-            if (index < 0)
+            if (index < 0 || edge.Arc != null)
             {
                 return false;
             }

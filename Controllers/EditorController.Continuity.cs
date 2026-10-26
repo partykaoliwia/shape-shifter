@@ -5,6 +5,14 @@ namespace ShapeShifter.Controllers;
 public partial class EditorController
 {
     public Vertex? SelectedVertex { get; private set; }
+    public bool SelectedVertexHasArc =>
+            SelectedVertex != null
+            && scene.Polygons
+                .SelectMany(polygon => polygon.Edges)
+                .Any(edge =>
+                    edge.Arc != null
+                    && (edge.Start == SelectedVertex
+                        || edge.End == SelectedVertex));
 
     public bool SelectedVertexHasBezier =>
         SelectedVertex != null
@@ -22,6 +30,7 @@ public partial class EditorController
             StatusMessage = "Select a vertex and finish dragging.";
             return;
         }
+
 
         StatusMessage = geometryEditor.TrySetContinuity(
             SelectedVertex, continuity)
