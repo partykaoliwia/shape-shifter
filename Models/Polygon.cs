@@ -38,6 +38,23 @@ namespace ShapeShifter.Models
             {
                 return false;
             }
+            var segment = edge.Bezier;
+
+            if (segment != null)
+            { 
+                var (first, second) = segment.Split();
+
+                var firstEdge = new Edge(first.Start, first.End);
+                firstEdge.EnableBezier(first);
+
+                var secondEdge = new Edge(second.Start, second.End);
+                secondEdge.EnableBezier(second);
+
+                edges[index] = firstEdge;
+                edges.Insert(index + 1, secondEdge);
+
+                return true;
+            }
 
             Vector2 midpoint = (edge.Start.Position + edge.End.Position) / 2f;
             var vertex = new Vertex(midpoint);

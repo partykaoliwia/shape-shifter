@@ -10,7 +10,7 @@ using ShapeShifter.Models;
 
 namespace ShapeShifter.Views
 {
-    public class EditorPanel
+    public partial class EditorPanel
     {
         private Edge? lengthEditorEdge;
         private float targetLength;
@@ -20,6 +20,7 @@ namespace ShapeShifter.Views
             {
                 DrawPerpendicularEditor(controller);
                 DrawLengthEditor(controller);
+                DrawBezierEditor(controller);
                 ImGui.Text("Drag a vertex with LMB to move it.");
                 ImGui.Text("Drag an edge with LMB to move the polygon.");
                 ImGui.Text("Insert over an edge: add a midpoint vertex.");
@@ -58,6 +59,11 @@ namespace ShapeShifter.Views
                 ImGui.Text("Select exactly two edges using Ctrl + click.");
                 return;
             }
+            if (controller.SelectedEdges.Any(edge => edge.Bezier != null))
+            {
+                ImGui.Text("Select two line segments.");
+                return;
+            }
 
             if (controller.IsDragging)
             {
@@ -91,6 +97,12 @@ namespace ShapeShifter.Views
             {
                 lengthEditorEdge = null;
                 ImGui.Text("Select exactly one edge.");
+                return;
+            }
+            if (edge.Bezier != null)
+            {
+                lengthEditorEdge = null;
+                ImGui.Text("Length constraints are available for line segments.");
                 return;
             }
 

@@ -6,7 +6,7 @@ using ShapeShifter.Models.Constraints;
 
 namespace ShapeShifter.Controllers
 {
-    public class EditorController
+    public partial class EditorController
     {
         private const float VertexHitRadius = 8f;
         private const float EdgeHitRadius = 6f;
@@ -26,7 +26,7 @@ namespace ShapeShifter.Controllers
         public IReadOnlyList<Edge> SelectedEdges => selectedEdges;
         public Edge? SelectedEdge => selectedEdges.Count == 1 ? selectedEdges[0] : null;
 
-        public bool IsDragging => draggedVertex != null || draggedPolygon != null;
+        public bool IsDragging => draggedVertex != null || draggedPolygon != null || draggedControlPoint != null;
         public EditorController(Scene scene)
         {
             this.scene = scene;
@@ -41,6 +41,11 @@ namespace ShapeShifter.Controllers
             if (!leftDown)
             {
                 StopDragging();
+            }
+            if (draggedControlPoint != null)
+            {
+                draggedControlPoint.MoveTo(mousePosition);
+                return;
             }
 
             if (draggedVertex != null)
@@ -61,11 +66,22 @@ namespace ShapeShifter.Controllers
                 return;
             }
             UpdateHover(mousePosition);
+            UpdateBezierHover(mousePosition);
             if (!leftPressed)
             {
                 return;
             }
             StatusMessage = null;
+            if (HoveredControlPoint != null)
+            {
+                if (!addAnother)
+                {
+                    draggedControlPoint = HoveredControlPoint;
+                    draggedControlPoint.MoveTo(mousePosition);
+                }
+
+                return;
+            }
             if (HoveredVertex != null)
             {
                 if (addAnother)
@@ -257,12 +273,14 @@ namespace ShapeShifter.Controllers
         {
             draggedVertex = null;
             draggedPolygon = null;
+            draggedControlPoint = null;
         }
         private void ClearHover()
         {
             HoveredVertex = null;
             HoveredEdge = null;
             HoveredPolygon = null;
+            HoveredControlPoint = null;
         }
         private void UpdateHover(Vector2 position)
         {
@@ -292,7 +310,7 @@ namespace ShapeShifter.Controllers
             {
                 foreach (var edge in polygon.Edges)
                 {
-                    float distanceSquared = Geometry2D.DistanceToSegmentSquared(position, edge.Start.Position,edge.End.Position);
+                    float distanceSquared = EdgeGeometry.DistanceSquared(edge, position);
                     if (distanceSquared<=bestDistanceSquared)
                     {
                         bestDistanceSquared = distanceSquared;

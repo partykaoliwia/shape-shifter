@@ -8,7 +8,7 @@ namespace ShapeShifter.Views
 {
     public class SceneRenderer
     {
-        public void Draw(Scene scene,Vertex? hoveredVertex,Edge? hoveredEdge,Polygon? hoveredPolygon, LineAlgorithm lineAlgorithm, IReadOnlyList<Edge> selectedEdges)
+        public void Draw(Scene scene,Vertex? hoveredVertex,Edge? hoveredEdge,Polygon? hoveredPolygon, LineAlgorithm lineAlgorithm, IReadOnlyList<Edge> selectedEdges,BezierControlPoint? hoveredControlPoint = null)
         {
             foreach (var polygon in scene.Polygons)
             {
@@ -25,7 +25,7 @@ namespace ShapeShifter.Views
                         color = Color.Orange;
                     }
 
-                    DrawLine(edge.Start.Position,edge.End.Position,color,lineAlgorithm);
+                    DrawEdge(edge, color, lineAlgorithm);
                 }
             }
 
@@ -38,6 +38,7 @@ namespace ShapeShifter.Views
                     Raylib.DrawCircleV(edge.Start.Position, 5f, color);
                 }
             }
+            DrawBezierHandles(scene, hoveredControlPoint);
             DrawLengthLabels(scene);
             DrawPerpendicularLabels(scene);
         }
@@ -122,6 +123,100 @@ namespace ShapeShifter.Views
             foreach (var pixel in Bresenham.Rasterize(x0, y0, x1, y1))
             {
                 Raylib.DrawPixel(pixel.X, pixel.Y, color);
+            }
+        }
+
+        private static void DrawEdge(
+            Edge edge,
+            Color color,
+            LineAlgorithm algorithm)
+        {
+            var segment = edge.Bezier;
+
+            if (segment == null)
+            {
+                DrawLine(
+                    edge.Start.Position,
+                    edge.End.Position,
+                    color,
+                    algorithm);
+
+                return;
+            }
+
+            DrawDashedLine(
+                segment.Start.Position, segment.Control1.Position);
+
+            DrawDashedLine(
+                segment.Control1.Position, segment.Control2.Position);
+
+            DrawDashedLine(
+                segment.Control2.Position, segment.End.Position);
+
+            Vector2 previous = segment.Start.Position;
+
+            foreach (var point in CubicBezierPointGenerator.GeneratePoints(segment))
+            {
+                DrawLine(previous, point, color, algorithm);
+                previous = point;
+            }
+        }
+
+        private static void DrawBezierHandles(
+            Scene scene,
+            BezierControlPoint? hoveredControlPoint)
+        {
+            foreach (var polygon in scene.Polygons)
+            {
+                foreach (var edge in polygon.Edges)
+                {
+                    if (edge.Bezier is not { } segment)
+                    {
+                        continue;
+                    }
+
+                    DrawHandle(segment.Control1, hoveredControlPoint);
+                    DrawHandle(segment.Control2, hoveredControlPoint);
+                }
+            }
+        }
+
+        private static void DrawHandle(
+            BezierControlPoint controlPoint,
+            BezierControlPoint? hoveredControlPoint)
+        {
+            var color = controlPoint == hoveredControlPoint
+                ? Color.Blue
+                : Color.Orange;
+
+            Vector2 position = controlPoint.Position;
+
+            Raylib.DrawRectangle(
+                (int)MathF.Round(position.X) - 4,
+                (int)MathF.Round(position.Y) - 4,
+                8,
+                8,
+                color);
+        }
+
+        private static void DrawDashedLine(Vector2 start, Vector2 end)
+        {
+            Vector2 delta = end - start;
+            float length = delta.Length();
+
+            if (length <= 0f)
+            {
+                return;
+            }
+
+            Vector2 direction = delta / length;
+
+            for (float distance = 0f; distance < length; distance += 10f)
+            {
+                Raylib.DrawLineV(
+                    start + direction * distance,
+                    start + direction * MathF.Min(distance + 5f, length),
+                    Color.Gray);
             }
         }
     }
