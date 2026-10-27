@@ -24,6 +24,10 @@ namespace ShapeShifter
             var panel = new EditorPanel();
             var lineAlgorithm = LineAlgorithm.Library;
             Raylib.InitWindow(screenWidth,screenHeight,"ShapeShifter");
+            var iconPath = Path.Combine(AppContext.BaseDirectory,"Assets","shapeshifter-icon.png");
+            var icon = Raylib.LoadImage(iconPath);
+            Raylib.SetWindowIcon(icon);
+            Raylib.UnloadImage(icon);
             Raylib.SetTargetFPS(60);
 
             rlImGui.Setup(true);
