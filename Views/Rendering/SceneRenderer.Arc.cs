@@ -14,14 +14,13 @@ public partial class SceneRenderer
     public static void DrawCircularArc(
         CircularArcSegment arc,
         Color color,
-        LineAlgorithm algorithm)
+        LineAlgorithm algorithm,
+        int thickness = 1)
     {
         Vector2 previous = arc.Start.Position;
-
-        foreach (var point in
-            CircularArcPointGenerator.GeneratePoints(arc).Skip(1))
+        foreach (var point in CircularArcPointGenerator.GeneratePoints(arc).Skip(1))
         {
-            DrawLine(previous, point, color, algorithm);
+            DrawLine(previous, point, color, algorithm, thickness);
             previous = point;
         }
     }

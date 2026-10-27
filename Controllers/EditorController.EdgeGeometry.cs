@@ -45,4 +45,9 @@ public partial class EditorController
 
         UpdateHover(previousMousePosition);
     }
+    public void SetSelectedEdgeThickness(int thickness)
+    {
+        if (IsDragging || SelectedEdge is not { } edge || edge.Bezier != null) return;
+        edge.Thickness = Math.Clamp(thickness, 1, 10);
+    }
 }

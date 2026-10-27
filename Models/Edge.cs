@@ -8,6 +8,7 @@ public class Edge
 {
     public Vertex Start { get; }
     public Vertex End { get; }
+    public int Thickness { get; set; } = 1;
 
     public CubicBezierSegment? Bezier { get; private set; }
     public CircularArcSegment? Arc { get; private set; }

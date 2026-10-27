@@ -63,21 +63,64 @@ namespace ShapeShifter.Views.Rendering
         /// <summary>
         /// Rounds endpoints to pixel coordinates and draws with Raylib or the custom Bresenham algorithm.
         /// </summary>
-        private static void DrawLine(Vector2 start, Vector2 end, Color color, LineAlgorithm lineAlgorithm)
+        // private static void DrawLine(Vector2 start, Vector2 end, Color color, LineAlgorithm lineAlgorithm)
+        // {
+        //     int x0 = (int)MathF.Round(start.X);
+        //     int y0 = (int)MathF.Round(start.Y);
+        //     int x1 = (int)MathF.Round(end.X);
+        //     int y1 = (int)MathF.Round(end.Y);
+        //     if (lineAlgorithm == LineAlgorithm.Library)
+        //     {
+        //         Raylib.DrawLine(x0, y0, x1, y1, color);
+        //         return;
+        //     }
+
+        //     foreach (var pixel in Bresenham.Rasterize(x0, y0, x1, y1))
+        //     {
+        //         Raylib.DrawPixel(pixel.X, pixel.Y, color);
+        //     }
+        // }
+        private static void DrawLine(
+            Vector2 start,
+            Vector2 end,
+            Color color,
+            LineAlgorithm lineAlgorithm,
+            int thickness = 1)
         {
             int x0 = (int)MathF.Round(start.X);
             int y0 = (int)MathF.Round(start.Y);
             int x1 = (int)MathF.Round(end.X);
             int y1 = (int)MathF.Round(end.Y);
+
             if (lineAlgorithm == LineAlgorithm.Library)
             {
-                Raylib.DrawLine(x0, y0, x1, y1, color);
+                if (thickness == 1)
+                {
+                    Raylib.DrawLine(x0, y0, x1, y1, color);
+                }
+                else
+                {
+                    var first = new Vector2(x0, y0);
+                    var last = new Vector2(x1, y1);
+
+                    Raylib.DrawLineEx(first, last, thickness, color);
+                    Raylib.DrawCircleV(first, thickness / 2f, color);
+                    Raylib.DrawCircleV(last, thickness / 2f, color);
+                }
+
                 return;
             }
 
             foreach (var pixel in Bresenham.Rasterize(x0, y0, x1, y1))
             {
-                Raylib.DrawPixel(pixel.X, pixel.Y, color);
+                if (thickness == 1)
+                {
+                    Raylib.DrawPixel(pixel.X, pixel.Y, color);
+                }
+                else
+                {
+                    Raylib.DrawCircleV(new Vector2(pixel.X, pixel.Y),thickness / 2f,color);
+                }
             }
         }
 
@@ -93,7 +136,7 @@ namespace ShapeShifter.Views.Rendering
             var arc = edge.Arc;
             if (arc!=null)
             {
-                DrawCircularArc(arc, color, algorithm);
+                DrawCircularArc(arc, color, algorithm, edge.Thickness);
                 return;
             }
             var segment = edge.Bezier;
@@ -104,7 +147,8 @@ namespace ShapeShifter.Views.Rendering
                     edge.Start.Position,
                     edge.End.Position,
                     color,
-                    algorithm);
+                    algorithm,
+                    edge.Thickness);
 
                 return;
             }

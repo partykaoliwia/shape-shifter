@@ -21,8 +21,6 @@ namespace ShapeShifter.Views
 
         private Edge? lengthEditorEdge;
         private float targetLength;
-        private string scenePath = "scene.json";
-        public string ScenePath => scenePath;
         public bool SaveRequested { get; private set; }
         public bool LoadRequested { get; private set; }
         public string? FileStatus { get; set; }

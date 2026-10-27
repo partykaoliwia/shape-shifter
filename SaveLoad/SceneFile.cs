@@ -25,7 +25,8 @@ public static class SceneFile
                 e.Bezier?.Control2.Position ?? default,
                 e.Arc?.TangentDirection ?? default,
                 e.Arc?.Clockwise ?? true,
-                scene.GetLengthConstraint(e)?.TargetLength
+                scene.GetLengthConstraint(e)?.TargetLength,
+                e.Thickness
             )).ToArray()
         ).ToArray();
 
@@ -65,6 +66,7 @@ public static class SceneFile
             {
                 var saved = savedEdges[i];
                 var edge = polygon.Edges[i];
+                edge.Thickness = Math.Clamp(saved.Thickness, 1, 10);
 
                 switch (saved.Type)
                 {
@@ -117,5 +119,6 @@ public static class SceneFile
         Vector2 Control2,
         Vector2 Tangent,
         bool Clockwise,
-        float? Length);
+        float? Length,
+        int Thickness = 1);
 }

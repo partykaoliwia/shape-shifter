@@ -49,8 +49,8 @@ namespace ShapeShifter.Models
 
                 var midpointVertex = new Vertex(geometry.PointAt(0.5f));
 
-                edges[index] = new Edge(edge.Start, midpointVertex);
-                edges.Insert(index + 1, new Edge(midpointVertex, edge.End));
+                edges[index] = new Edge(edge.Start, midpointVertex) {Thickness = edge.Thickness};
+                edges.Insert(index + 1, new Edge(midpointVertex, edge.End){Thickness = edge.Thickness});
 
                 return true;
             }
@@ -75,8 +75,15 @@ namespace ShapeShifter.Models
             Vector2 midpoint = (edge.Start.Position + edge.End.Position) / 2f;
             var vertex = new Vertex(midpoint);
 
-            edges[index] = new Edge(edge.Start, vertex);
-            edges.Insert(index + 1, new Edge(vertex, edge.End));
+            edges[index] = new Edge(edge.Start, vertex)
+            {
+                Thickness = edge.Thickness
+            };
+
+            edges.Insert(index + 1, new Edge(vertex, edge.End)
+            {
+                Thickness = edge.Thickness
+            });
 
             return true;
         }
@@ -105,7 +112,10 @@ namespace ShapeShifter.Models
             Edge incoming = edges[incomingIndex];
             Edge outgoing = edges[outgoingIndex];
 
-            var replacement = new Edge(incoming.Start, outgoing.End);
+            var replacement = new Edge(incoming.Start, outgoing.End)
+            {
+                Thickness = incoming.Thickness
+            };
 
             edges[incomingIndex] = replacement;
             edges.RemoveAt(outgoingIndex);

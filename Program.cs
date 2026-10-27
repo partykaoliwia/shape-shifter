@@ -66,7 +66,7 @@ namespace ShapeShifter
                 controller.UpdateMouse(input);
                 if (isMouseAvailable && keyboardAvailable)
                 {
-                    if (Raylib.IsKeyPressed(KeyboardKey.Insert))
+                    if (Raylib.IsKeyPressed(KeyboardKey.Insert) || Raylib.IsKeyPressed(KeyboardKey.I))
                     {
                         controller.InsertVertexAtHoveredEdge();
                     }

@@ -27,24 +27,24 @@ public partial class EditorPanel
             ImGui.TextWrapped("Finish dragging to change the edge type.");
             return;
         }
+        if (edge.Bezier == null)
+        {
+            int thickness = edge.Thickness;
+            if (ImGui.SliderInt("Thickness", ref thickness, 1, 10))
+                controller.SetSelectedEdgeThickness(thickness);
+        }
 
-        if (ImGui.RadioButton(
-            "Line segment",
-            edge.GeometryType == EdgeGeometryType.Line))
+        if (ImGui.RadioButton("Line segment",edge.GeometryType == EdgeGeometryType.Line))
         {
             controller.SetSelectedEdgeGeometry(EdgeGeometryType.Line);
         }
 
-        if (ImGui.RadioButton(
-            "Cubic Bezier",
-            edge.GeometryType == EdgeGeometryType.Bezier))
+        if (ImGui.RadioButton("Cubic Bezier",edge.GeometryType == EdgeGeometryType.Bezier))
         {
             controller.SetSelectedEdgeGeometry(EdgeGeometryType.Bezier);
         }
 
-        if (ImGui.RadioButton(
-            "Circular arc",
-            edge.GeometryType == EdgeGeometryType.CircularArc))
+        if (ImGui.RadioButton("Circular arc",edge.GeometryType == EdgeGeometryType.CircularArc))
         {
             controller.SetSelectedEdgeGeometry(EdgeGeometryType.CircularArc);
         }
@@ -59,10 +59,8 @@ public partial class EditorPanel
             ImGui.Text($"Radius: {arc.Radius:F2}");
         }
 
-        ImGui.TextWrapped(
-            "Circular arcs support G0/G1, with G1 at only one endpoint.");
+        ImGui.TextWrapped("Circular arcs support G0/G1, with G1 at only one endpoint.");
 
-        ImGui.TextWrapped(
-            "Changing geometry removes constraints involving this edge.");
+        ImGui.TextWrapped("Changing geometry removes constraints involving this edge.");
     }
 }
