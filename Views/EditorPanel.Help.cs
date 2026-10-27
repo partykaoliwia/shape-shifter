@@ -1,4 +1,5 @@
 using ImGuiNET;
+using System.Numerics;
 
 namespace ShapeShifter.Views;
 
@@ -8,7 +9,7 @@ public partial class EditorPanel
 
     private void DrawHelpButton()
     {
-        if (ImGui.Button("Help"))
+        if (ImGui.Button("Help / documentation", new Vector2(-1f, 0f)))
         {
             showHelp = true;
         }
@@ -20,9 +21,33 @@ public partial class EditorPanel
         {
             return;
         }
+        ImGui.SetNextWindowSize(
+            new Vector2(580f, 600f),
+            ImGuiCond.Appearing);
+
+        var displaySize = ImGui.GetIO().DisplaySize;
+        ImGui.SetNextWindowPos(
+            new Vector2(
+                SidebarWidth + (displaySize.X - SidebarWidth) * 0.5f,
+                displaySize.Y * 0.5f),
+            ImGuiCond.Appearing,
+            new Vector2(0.5f, 0.5f));
 
         if (ImGui.Begin("Help", ref showHelp))
         {
+            ImGui.SetWindowFontScale(1.4f);
+
+            ImGui.TextColored(
+                EditorTheme.Accent,
+                "ShapeShifter");
+
+            ImGui.SetWindowFontScale(1f);
+
+            ImGui.TextColored(
+                EditorTheme.MutedText,
+                "USER GUIDE");
+
+            ImGui.Spacing();
             ImGui.TextWrapped(
                 "ShapeShifter edits polygons made of line segments, "
                 + "cubic Bezier curves and circular arcs.");
@@ -118,15 +143,23 @@ public partial class EditorPanel
 
         ImGui.End();
     }
-
     private static void DrawHelpSection(
         string title,
         string text,
         ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.None)
     {
+        ImGui.Spacing();
+
         if (ImGui.CollapsingHeader(title, flags))
         {
+            ImGui.Indent(12f);
+            ImGui.Spacing();
+
             ImGui.TextWrapped(text);
+
+            ImGui.Spacing();
+            ImGui.Unindent(12f);
         }
     }
+
 }

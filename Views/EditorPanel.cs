@@ -12,32 +12,51 @@ namespace ShapeShifter.Views
 {
     public partial class EditorPanel
     {
+        public const float SidebarWidth = 320f;
+
         private Edge? lengthEditorEdge;
         private float targetLength;
         public void Draw(EditorController controller, ref LineAlgorithm lineAlgorithm)
         {
-            if (ImGui.Begin("Editing"))
+            ImGui.SetNextWindowPos(Vector2.Zero, ImGuiCond.Always);
+            ImGui.SetNextWindowSize(
+                new Vector2(SidebarWidth, ImGui.GetIO().DisplaySize.Y),
+                ImGuiCond.Always);
+
+            const ImGuiWindowFlags sidebarFlags =
+                ImGuiWindowFlags.NoTitleBar
+                | ImGuiWindowFlags.NoMove
+                | ImGuiWindowFlags.NoResize
+                | ImGuiWindowFlags.NoCollapse
+                | ImGuiWindowFlags.NoSavedSettings
+                | ImGuiWindowFlags.NoBringToFrontOnFocus;
+
+            ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0f);
+            ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 0f);
+
+            if (ImGui.Begin("Editing", sidebarFlags))
             {
+                ImGui.SetWindowFontScale(1.35f);
+                ImGui.TextColored(EditorTheme.Accent, "ShapeShifter");
+                ImGui.SetWindowFontScale(1f);
+                ImGui.TextColored(EditorTheme.MutedText, "POLYGON EDITOR");
+                ImGui.Spacing();
                 DrawHelpButton();
-                DrawPerpendicularEditor(controller);
-                DrawLengthEditor(controller);
-                DrawEdgeGeometryEditor(controller);
-                DrawContinuityEditor(controller);
-                ImGui.Text("Drag a vertex with LMB to move it.");
-                ImGui.Text("Drag an edge with LMB to move the polygon.");
-                ImGui.Text("Insert over an edge: add a midpoint vertex.");
-                ImGui.Text("Delete over a vertex: remove it.");
-                ImGui.Text("Click an edge to select it.");
-                ImGui.Text("Ctrl + click: toggle selection, up to two edges.");
-                ImGui.Text("Click empty space without Ctrl to clear selection.");
+
                 if (!string.IsNullOrEmpty(controller.StatusMessage))
                 {
-                    ImGui.Separator();
+                    ImGui.Spacing();
                     ImGui.TextWrapped(controller.StatusMessage);
                 }
 
-                ImGui.Separator();
-                ImGui.Text("Line drawing algorithm");
+                ImGui.PushItemWidth(150f);
+                DrawEdgeGeometryEditor(controller);
+                DrawContinuityEditor(controller);
+                DrawLengthEditor(controller);
+                DrawPerpendicularEditor(controller);
+                ImGui.PopItemWidth();
+
+                DrawSectionTitle("Line drawing algorithm");
 
                 if (ImGui.RadioButton("Library",lineAlgorithm == LineAlgorithm.Library))
                 {
@@ -48,18 +67,35 @@ namespace ShapeShifter.Views
                 {
                     lineAlgorithm = LineAlgorithm.Bresenham;
                 }
+
+                DrawSectionTitle("Quick controls");
+                ImGui.TextWrapped("LMB: drag a vertex, handle or polygon by its edge.");
+                ImGui.TextWrapped("Ctrl + click: select up to two edges.");
+                ImGui.TextWrapped("Shift + click: prefer an overlapping handle.");
+                ImGui.TextWrapped("Insert over an edge: add a midpoint vertex.");
+                ImGui.TextWrapped("Delete over a vertex: remove it.");
+                ImGui.TextWrapped("Click empty space without Ctrl to clear selection.");
             }
             ImGui.End();
+            ImGui.PopStyleVar(2);
             DrawHelpWindow();
         }
+
+        private static void DrawSectionTitle(string title)
+        {
+            ImGui.Spacing();
+            ImGui.Separator();
+            ImGui.Spacing();
+            ImGui.TextColored(EditorTheme.Accent, title);
+        }
+
         private void DrawPerpendicularEditor(EditorController controller)
         {
-            ImGui.Separator();
-            ImGui.Text("Perpendicularity");
+            DrawSectionTitle("Perpendicularity");
 
             if (controller.SelectedEdges.Count != 2)
             {
-                ImGui.Text("Select exactly two edges using Ctrl + click.");
+                ImGui.TextWrapped("Select exactly two edges using Ctrl + click.");
                 return;
             }
             if (controller.SelectedEdges.Any(edge => !edge.IsLine))
@@ -70,7 +106,7 @@ namespace ShapeShifter.Views
 
             if (controller.IsDragging)
             {
-                ImGui.Text("Finish dragging to edit the constraint.");
+                ImGui.TextWrapped("Finish dragging to edit the constraint.");
                 return;
             }
             if (controller.SelectedVertexHasArc)
@@ -98,8 +134,7 @@ namespace ShapeShifter.Views
         }
         private void DrawLengthEditor(EditorController controller)
         {
-            ImGui.Separator();
-            ImGui.Text("Edge length");
+            DrawSectionTitle("Edge length");
 
             var edge = controller.SelectedEdge;
 
@@ -112,7 +147,7 @@ namespace ShapeShifter.Views
             if (!edge.IsLine)
             {
                 lengthEditorEdge = null;
-                ImGui.Text("Length constraints are available for line segments.");
+                ImGui.TextWrapped("Length constraints are available for line segments.");
                 return;
             }
 
@@ -140,7 +175,7 @@ namespace ShapeShifter.Views
 
             if (controller.IsDragging)
             {
-                ImGui.Text("Finish dragging to edit the constraint.");
+                ImGui.TextWrapped("Finish dragging to edit the constraint.");
                 return;
             }
             if (controller.SelectedVertexHasArc)

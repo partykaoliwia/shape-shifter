@@ -27,6 +27,7 @@ namespace ShapeShifter
             Raylib.SetTargetFPS(60);
 
             rlImGui.Setup(true);
+            EditorTheme.Apply();
 
             while(!Raylib.WindowShouldClose())
             {
@@ -36,9 +37,11 @@ namespace ShapeShifter
                 rlImGui.Begin();
                 var io = ImGui.GetIO();
                 bool focused = Raylib.IsWindowFocused();
-                bool isMouseAvailable = focused && !io.WantCaptureMouse;
-                bool keyboardAvailable = focused && !io.WantCaptureKeyboard;
                 var mousePosition = Raylib.GetMousePosition();
+                bool isMouseAvailable = focused
+                    && !io.WantCaptureMouse
+                    && mousePosition.X >= EditorPanel.SidebarWidth;
+                bool keyboardAvailable = focused && !io.WantCaptureKeyboard;
                 var isLeftPressed = focused && Raylib.IsMouseButtonPressed(MouseButton.Left);
                 var isLeftDown = focused && Raylib.IsMouseButtonDown(MouseButton.Left);
                 var extendSelection = keyboardAvailable && (Raylib.IsKeyDown(KeyboardKey.LeftControl) || Raylib.IsKeyDown(KeyboardKey.RightControl));
@@ -57,7 +60,14 @@ namespace ShapeShifter
                     }
                 }
                 panel.Draw(controller, ref lineAlgorithm);
+                int sidebarWidth = (int)EditorPanel.SidebarWidth;
+                Raylib.BeginScissorMode(
+                    sidebarWidth,
+                    0,
+                    Math.Max(0, Raylib.GetScreenWidth() - sidebarWidth),
+                    Raylib.GetScreenHeight());
                 renderer.Draw(scene,controller.GetViewState(),lineAlgorithm);
+                Raylib.EndScissorMode();
                 rlImGui.End();
                 Raylib.EndDrawing();
             }

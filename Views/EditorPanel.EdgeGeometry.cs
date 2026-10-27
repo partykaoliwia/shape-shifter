@@ -8,8 +8,7 @@ public partial class EditorPanel
 {
     private static void DrawEdgeGeometryEditor(EditorController controller)
     {
-        ImGui.Separator();
-        ImGui.Text("Edge geometry");
+        DrawSectionTitle("Edge geometry");
 
         var edge = controller.SelectedEdge;
 
@@ -21,7 +20,7 @@ public partial class EditorPanel
 
         if (controller.IsDragging)
         {
-            ImGui.Text("Finish dragging to change the edge type.");
+            ImGui.TextWrapped("Finish dragging to change the edge type.");
             return;
         }
 
@@ -48,7 +47,7 @@ public partial class EditorPanel
 
         if (edge.Bezier != null)
         {
-            ImGui.Text("Drag the square handles to shape the curve.");
+            ImGui.TextWrapped("Drag the square handles to shape the curve.");
         }
 
         if (edge.Arc is { } arc)

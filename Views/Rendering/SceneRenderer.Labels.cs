@@ -44,15 +44,23 @@ namespace ShapeShifter.Views.Rendering
                 {
                     rows.TryGetValue(edge, out int row);
 
-                    Vector2 midpoint =
-                        (edge.Start.Position + edge.End.Position) / 2f;
+                    Vector2 midpoint =(edge.Start.Position + edge.End.Position) / 2f;
 
                     int x = (int)MathF.Round(midpoint.X) + 4;
                     int y = (int)MathF.Round(midpoint.Y) + 8 + row * 14;
 
+                    // ⟂
+                    Raylib.DrawLine(
+                        x + 5, y + 1,
+                        x + 5, y + 10,
+                        Color.DarkGray);
+                    Raylib.DrawLine(
+                        x, y + 10,
+                        x + 10, y + 10,
+                        Color.DarkGray);
                     Raylib.DrawText(
-                        $"P{pairNumber}",
-                        x,
+                        pairNumber.ToString(),
+                        x + 14,
                         y,
                         12,
                         Color.DarkGray);

@@ -8,8 +8,7 @@ public partial class EditorPanel
 {
     private static void DrawContinuityEditor(EditorController controller)
     {
-        ImGui.Separator();
-        ImGui.Text("Vertex continuity");
+        DrawSectionTitle("Vertex continuity");
 
         var vertex = controller.SelectedVertex;
 
@@ -22,7 +21,7 @@ public partial class EditorPanel
 
         if (controller.IsDragging)
         {
-            ImGui.Text("Finish dragging to change continuity.");
+            ImGui.TextWrapped("Finish dragging to change continuity.");
             return;
         }
 
