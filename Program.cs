@@ -42,7 +42,8 @@ namespace ShapeShifter
                 var isLeftPressed = focused && Raylib.IsMouseButtonPressed(MouseButton.Left);
                 var isLeftDown = focused && Raylib.IsMouseButtonDown(MouseButton.Left);
                 var extendSelection = keyboardAvailable && (Raylib.IsKeyDown(KeyboardKey.LeftControl) || Raylib.IsKeyDown(KeyboardKey.RightControl));
-                var input = new MouseInput(Position: mousePosition, LeftPressed: isLeftPressed, LeftDown: isLeftDown, CanInteractWithScene:isMouseAvailable,ExtendSelection: extendSelection);
+                bool preferControlPoints = keyboardAvailable && !extendSelection && (Raylib.IsKeyDown(KeyboardKey.LeftShift) || Raylib.IsKeyDown(KeyboardKey.RightShift));
+                var input = new MouseInput(Position: mousePosition, LeftPressed: isLeftPressed, LeftDown: isLeftDown, CanInteractWithScene:isMouseAvailable,ExtendSelection: extendSelection, PreferControlPoints: preferControlPoints);
                 controller.UpdateMouse(input);
                 if (isMouseAvailable && keyboardAvailable)
                 {

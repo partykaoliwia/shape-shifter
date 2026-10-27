@@ -7,5 +7,6 @@ namespace ShapeShifter.Editing.Interaction
         bool LeftPressed,
         bool LeftDown,
         bool CanInteractWithScene,
-        bool ExtendSelection);
+        bool ExtendSelection,
+        bool PreferControlPoints = false);
 }

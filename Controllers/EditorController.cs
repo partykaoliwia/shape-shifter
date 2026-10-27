@@ -74,7 +74,7 @@ namespace ShapeShifter.Controllers
                 ClearHover();
                 return;
             }
-            UpdateHover(input.Position);
+            UpdateHover(input.Position, input.PreferControlPoints);
             if (!input.LeftPressed)
             {
                 return;
@@ -193,9 +193,9 @@ namespace ShapeShifter.Controllers
         {
             hoveredElement = null;
         }
-        private void UpdateHover(Vector2 position)
+        private void UpdateHover(Vector2 position,bool preferControlPoints = false)
         {
-             hoveredElement = hitTester.HitTest(position);
+             hoveredElement = hitTester.HitTest(position,preferControlPoints);
         }
 
         private void RemoveInvalidSelections()

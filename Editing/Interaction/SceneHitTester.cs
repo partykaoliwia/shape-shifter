@@ -17,8 +17,15 @@ namespace ShapeShifter.Editing.Interaction
             this.scene = scene;
         }
 
-        public HitTestResult? HitTest(Vector2 position)
+        public HitTestResult? HitTest(Vector2 position,bool preferControlPoints = false)
         {
+            if (preferControlPoints)
+            {
+                return FindControlPoint(position)
+                    ?? FindVertex(position)
+                    ?? FindEdge(position);
+            }
+
             return FindVertex(position)
                 ?? FindControlPoint(position)
                 ?? FindEdge(position);

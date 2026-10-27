@@ -28,6 +28,7 @@ public partial class EditorPanel
                 CONTROLS
                 LMB: drag a vertex, handle or polygon by its edge.
                 Ctrl + LMB: select up to two edges.
+                Shift + LMB: prefer a Bezier handle when it overlaps a vertex.
                 Click empty space: clear selection.
                 Insert over an edge: add a midpoint vertex.
                 Delete over a vertex: remove it.
