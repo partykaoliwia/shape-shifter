@@ -1,0 +1,181 @@
+{
+  "Polygons": [
+    [
+      {
+        "Position": {
+          "X": 379.52844,
+          "Y": 130.88882
+        },
+        "C
+        "Tangent": {
+          "X": 0,
+          "Y": 0
+        },
+        "Clockwise": true,
+        "Length": 210
+      },
+      {
+        "Position": {
+          "X": 577.34375,
+          "Y": 60.39618
+        },
+        "Continuity": 2,
+        "Type": 1,
+        "Control1": {
+          "X": 643.28217,
+          "Y": 36.898632
+        },
+        "Control2": {
+          "X": 630,
+          "Y": 390
+        },
+        "Tangent": {
+          "X": 0,
+          "Y": 0
+        },
+        "Clockwise": true,
+        "Length": null
+      },
+      {
+        "Position": {
+          "X": 560,
+          "Y": 390
+        },
+        "Continuity": 2,
+        "Type": 0,
+        "Control1": {
+          "X": 0,
+          "Y": 0
+        },
+        "Control2": {
+          "X": 0,
+          "Y": 0
+        },
+        "Tangent": {
+          "X": 0,
+          "Y": 0
+        },
+        "Clockwise": true,
+        "Length": null
+      },
+      {
+        "Position": {
+          "X": 350,
+          "Y": 390
+        },
+        "Continuity": 2,
+        "Type": 0,
+        "Control1": {
+          "X": 0,
+          "Y": 0
+        },
+        "Control2": {
+          "X": 0,
+          "Y": 0
+        },
+        "Tangent": {
+          "X": 0,
+          "Y": 0
+        },
+        "Clockwise": true,
+        "Length": null
+      }
+    ],
+    [
+      {
+        "Position": {
+          "X": 687,
+          "Y": 338
+        },
+        "Continuity": 2,
+        "Type": 0,
+        "Control1": {
+          "X": 0,
+          "Y": 0
+        },
+        "Control2": {
+          "X": 0,
+          "Y": 0
+        },
+        "Tangent": {
+          "X": 0,
+          "Y": 0
+        },
+        "Clockwise": true,
+        "Length": null
+      },
+      {
+        "Position": {
+          "X": 870,
+          "Y": 180
+        },
+        "Continuity": 2,
+        "Type": 0,
+        "Control1": {
+          "X": 0,
+          "Y": 0
+        },
+        "Control2": {
+          "X": 0,
+          "Y": 0
+        },
+        "Tangent": {
+          "X": 0,
+          "Y": 0
+        },
+        "Clockwise": true,
+        "Length": null
+      },
+      {
+        "Position": {
+          "X": 900,
+          "Y": 420
+        },
+        "Continuity": 1,
+        "Type": 2,
+        "Control1": {
+          "X": 0,
+          "Y": 0
+        },
+        "Control2": {
+          "X": 0,
+          "Y": 0
+        },
+        "Tangent": {
+          "X": 24.998026,
+          "Y": 199.9842
+        },
+        "Clockwise": true,
+        "Length": null
+      },
+      {
+        "Position": {
+          "X": 716.73975,
+          "Y": 421.46158
+        },
+        "Continuity": 0,
+        "Type": 0,
+        "Control1": {
+          "X": 0,
+          "Y": 0
+        },
+        "Control2": {
+          "X": 0,
+          "Y": 0
+        },
+        "Tangent": {
+          "X": 0,
+          "Y": 0
+        },
+        "Clockwise": true,
+        "Length": null
+      }
+    ]
+  ],
+  "Perpendicular": [
+    [
+      0,
+      7
+    ]
+  ]
+}

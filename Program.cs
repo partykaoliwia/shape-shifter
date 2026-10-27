@@ -1,13 +1,16 @@
 using System.Numerics;
+using System.Text.Json;
 using ImGuiNET;
 using Raylib_cs;
 using rlImGui_cs;
 using ShapeShifter.Controllers;
 using ShapeShifter.Editing.Interaction;
 using ShapeShifter.Models;
+using ShapeShifter.SaveLoad;
 using ShapeShifter.Setup;
 using ShapeShifter.Views;
 using ShapeShifter.Views.Rendering;
+using Forms = System.Windows.Forms;
 
 namespace ShapeShifter
 {
@@ -20,6 +23,7 @@ namespace ShapeShifter
         /// Creates the demo scene, processes input and renders frames until the window closes.
         /// Releases graphics resources after the main loop ends.
         /// </summary>
+        [STAThread]
         static void Main()
         {
             const int screenWidth = 1000;
@@ -72,6 +76,59 @@ namespace ShapeShifter
                     }
                 }
                 panel.Draw(controller, ref lineAlgorithm);
+                try
+                {
+                    if (panel.SaveRequested)
+                    {
+                        using var dialog = new Forms.SaveFileDialog
+                        {
+                            Title = "Save scene",
+                            Filter = "Scene JSON (*.json)|*.json",
+                            DefaultExt = "json",
+                            AddExtension = true,
+                            FileName = "scene.json",
+                            OverwritePrompt = true,
+                            RestoreDirectory = true
+                        };
+
+                        if (dialog.ShowDialog() == Forms.DialogResult.OK)
+                        {
+                            SceneFile.Save(scene, dialog.FileName);
+                            panel.FileStatus = "Scene saved.";
+                        }
+                    }
+                    else if (panel.LoadRequested)
+                    {
+                        using var dialog = new Forms.OpenFileDialog
+                        {
+                            Title = "Load scene",
+                            Filter = "Scene JSON (*.json)|*.json",
+                            CheckFileExists = true,
+                            Multiselect = false,
+                            RestoreDirectory = true
+                        };
+
+                        if (dialog.ShowDialog() == Forms.DialogResult.OK)
+                        {
+                            var loadedScene = SceneFile.Load(dialog.FileName);
+                            var loadedController = new EditorController(loadedScene);
+
+                            scene = loadedScene;
+                            controller = loadedController;
+
+                            panel.FileStatus = "Scene loaded.";
+                        }
+                    }
+                }
+                catch (Exception ex) when (
+                    ex is IOException
+                    or UnauthorizedAccessException
+                    or JsonException
+                    or ArgumentException
+                    or NotSupportedException)
+                {
+                    panel.FileStatus = $"File error: {ex.Message}";
+                }
                 int sidebarWidth = (int)EditorPanel.SidebarWidth;
                 // Reserve the sidebar area without changing the scene's coordinate system.
                 Raylib.BeginScissorMode(

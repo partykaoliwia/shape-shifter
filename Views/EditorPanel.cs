@@ -18,14 +18,22 @@ namespace ShapeShifter.Views
     {
         public const float SidebarWidth = 320f;
 
+
         private Edge? lengthEditorEdge;
         private float targetLength;
+        private string scenePath = "scene.json";
+        public string ScenePath => scenePath;
+        public bool SaveRequested { get; private set; }
+        public bool LoadRequested { get; private set; }
+        public string? FileStatus { get; set; }
         /// <summary>
         /// Draws the full-height sidebar, selected-element controls and drawing algorithm choice.
         /// Opens the separate Help window when requested.
         /// </summary>
         public void Draw(EditorController controller, ref LineAlgorithm lineAlgorithm)
         {
+            SaveRequested = false;
+            LoadRequested = false;
             // Override saved window placement so the sidebar remains part of the application layout.
             ImGui.SetNextWindowPos(Vector2.Zero, ImGuiCond.Always);
             ImGui.SetNextWindowSize(
@@ -51,6 +59,15 @@ namespace ShapeShifter.Views
                 ImGui.TextColored(EditorTheme.MutedText, "POLYGON EDITOR");
                 ImGui.Spacing();
                 DrawHelpButton();
+                DrawSectionTitle("Save / Load");
+                SaveRequested = ImGui.Button("Save");
+                ImGui.SameLine();
+                LoadRequested = ImGui.Button("Load");
+
+                if (!string.IsNullOrEmpty(FileStatus))
+                {
+                    ImGui.TextWrapped(FileStatus);
+                }
 
                 if (!string.IsNullOrEmpty(controller.StatusMessage))
                 {
