@@ -2,6 +2,10 @@ using ShapeShifter.Models;
 
 namespace ShapeShifter.Editing.Interaction
 {
+    /// <summary>
+    /// Identifies a hit polygon and exactly one vertex, Bezier handle or edge within it.
+    /// The other element properties remain null.
+    /// </summary>
     public sealed class HitTestResult
     {
         public Polygon Polygon { get; }

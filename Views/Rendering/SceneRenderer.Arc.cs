@@ -7,6 +7,10 @@ namespace ShapeShifter.Views.Rendering;
 
 public partial class SceneRenderer
 {
+    /// <summary>
+    /// Connects sampled arc points with the selected line algorithm.
+    /// Skips the first sample because it is already used as the initial endpoint.
+    /// </summary>
     public static void DrawCircularArc(
         CircularArcSegment arc,
         Color color,

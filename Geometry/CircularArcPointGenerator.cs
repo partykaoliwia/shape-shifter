@@ -3,12 +3,19 @@ using ShapeShifter.Models;
 
 namespace ShapeShifter.Geometry;
 
+/// <summary>
+/// Converts a valid circular arc into points for rendering and hit testing.
+/// </summary>
 public static class CircularArcPointGenerator
 {
     private const float TargetSampleSpacing = 4f;
     private const int MinSteps = 16;
     private const int MaxSteps = 4096;
 
+    /// <summary>
+    /// Samples the angular sweep with a step count based on arc length.
+    /// Includes exact endpoints and returns no points for invalid arc geometry.
+    /// </summary>
     public static IEnumerable<Vector2> GeneratePoints(
         CircularArcSegment arc)
     {

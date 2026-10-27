@@ -5,6 +5,10 @@ using ShapeShifter.Editing.Interaction;
 
 namespace ShapeShifter.Controllers
 {
+    /// <summary>
+    /// Tracks selection, hover and dragging, and delegates geometry changes to the editor.
+    /// Supplies rendering state and feedback messages without drawing the interface.
+    /// </summary>
     public partial class EditorController
     {
         private readonly Scene scene;
@@ -34,6 +38,9 @@ namespace ShapeShifter.Controllers
             geometryEditor = new GeometryEditor(scene);
             hitTester = new SceneHitTester(scene);
         }
+        /// <summary>
+        /// Creates rendering state with a copy of the selected-edge list.
+        /// </summary>
         public EditorViewState GetViewState()
         {
             return new EditorViewState(
@@ -42,6 +49,10 @@ namespace ShapeShifter.Controllers
                 SelectedVertex);
         }
 
+        /// <summary>
+        /// Continues an active drag or handles hover and selection for a new mouse update.
+        /// Captured drags keep following the cursor until the left button is released.
+        /// </summary>
         public void UpdateMouse(MouseInput input)
         {
             Vector2 offset = input.Position - previousMousePosition;
@@ -51,6 +62,7 @@ namespace ShapeShifter.Controllers
             {
                 StopDragging();
             }
+            // Finish active drags even when the cursor moves over an interface panel.
             if (draggedControlPoint != null)
             {
                 geometryEditor.MoveControlPointTo(draggedControlPoint,input.Position);
@@ -119,6 +131,10 @@ namespace ShapeShifter.Controllers
             }
         }
         
+        /// <summary>
+        /// Splits the hovered edge when no drag is active and refreshes stale selection and hover state.
+        /// Reports when the edit cannot preserve the remaining relations.
+        /// </summary>
         public void InsertVertexAtHoveredEdge()
         {
             if (IsDragging || HoveredPolygon == null || HoveredEdge == null)
@@ -137,6 +153,10 @@ namespace ShapeShifter.Controllers
                 StatusMessage = "Cannot split this edge while preserving constraints.";
             }
         }
+        /// <summary>
+        /// Removes the hovered vertex when no drag is active, keeping at least three vertices.
+        /// Refreshes selection on success or reports why the edit was rejected.
+        /// </summary>
         public void DeleteHoveredVertex()
         {
             if (IsDragging || HoveredPolygon == null || HoveredVertex == null)
@@ -158,6 +178,10 @@ namespace ShapeShifter.Controllers
             }
         }
         
+        /// <summary>
+        /// Replaces edge selection, or toggles one edge when extending the selection.
+        /// Allows at most two selected edges and clears the selected vertex.
+        /// </summary>
         public void SelectEdge(Edge edge, bool extendSelection)
         {
             SelectedVertex = null;
@@ -198,11 +222,13 @@ namespace ShapeShifter.Controllers
              hoveredElement = hitTester.HitTest(position,preferControlPoints);
         }
 
+        /// <summary>
+        /// Clears references to edges and vertices removed by an accepted topology change.
+        /// </summary>
         private void RemoveInvalidSelections()
         {
             selectedEdges.RemoveAll(edge => !scene.ContainsEdge(edge));
-            if (SelectedVertex != null
-                && !scene.Polygons
+            if (SelectedVertex != null && !scene.Polygons
                     .SelectMany(polygon => polygon.Edges)
                     .Any(edge => edge.Start == SelectedVertex))
             {

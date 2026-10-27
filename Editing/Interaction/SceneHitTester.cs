@@ -4,6 +4,9 @@ using ShapeShifter.Models;
 
 namespace ShapeShifter.Editing.Interaction
 {
+    /// <summary>
+    /// Finds scene elements near the cursor using separate point and edge hit radii.
+    /// </summary>
     public sealed class SceneHitTester
     {
         private const float VertexHitRadius = 8f;
@@ -17,6 +20,11 @@ namespace ShapeShifter.Editing.Interaction
             this.scene = scene;
         }
 
+        /// <summary>
+        /// Prefers vertices, then handles, then edges unless handle priority is requested.
+        /// Handle priority makes a handle selectable when it overlaps a vertex.
+        /// </summary>
+        /// <returns>The nearest hit in the first matching category, or null for empty space.</returns>
         public HitTestResult? HitTest(Vector2 position,bool preferControlPoints = false)
         {
             if (preferControlPoints)
@@ -84,6 +92,9 @@ namespace ShapeShifter.Editing.Interaction
             return result;
         }
 
+        /// <summary>
+        /// Finds the nearest edge within the hit radius, following sampled curves rather than chords.
+        /// </summary>
         private HitTestResult? FindEdge(Vector2 position)
         {
             HitTestResult? result = null;

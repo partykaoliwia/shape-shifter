@@ -2,6 +2,10 @@ using System.Numerics;
 
 namespace ShapeShifter.Models
 {
+    /// <summary>
+    /// A Bezier handle stored as an offset from its endpoint vertex.
+    /// Moving the vertex therefore carries the handle along without changing its offset.
+    /// </summary>
     public class BezierControlPoint : IGeometryVariable
     {
         private readonly Vertex anchor;
@@ -17,6 +21,9 @@ namespace ShapeShifter.Models
             offset = position - anchor.Position;
         }
 
+        /// <summary>
+        /// Sets the handle's absolute position by updating its offset from the anchor.
+        /// </summary>
         public void MoveTo(Vector2 position)
         {
             offset = position - anchor.Position;

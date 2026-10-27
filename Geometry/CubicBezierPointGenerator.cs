@@ -3,11 +3,18 @@ using ShapeShifter.Models;
 
 namespace ShapeShifter.Geometry
 {
+    /// <summary>
+    /// Samples cubic Bezier curves using their power basis and forward differences.
+    /// </summary>
     public static class CubicBezierPointGenerator
     {
         private const float TargetSampleSpacing = 4f;
         private const int MinSteps = 16;
         private const int MaxSteps = 512;
+        /// <summary>
+        /// Chooses a bounded sample count from the control polygon's length.
+        /// After initializing the differences, advances along the curve using additions only.
+        /// </summary>
         public static IEnumerable<Vector2> GeneratePoints(
             CubicBezierSegment segment)
         {
@@ -23,6 +30,7 @@ namespace ShapeShifter.Geometry
             int steps = Math.Clamp(
                 (int)MathF.Ceiling(controlPolygonLength / TargetSampleSpacing),MinSteps,MaxSteps);
 
+            // Convert the four Bezier points to coefficients of a cubic polynomial.
             Vector2 A0 = v0;
             Vector2 A1 = 3f * (v1 - v0);
             Vector2 A2 = 3f * (v2 - 2f * v1 + v0);
@@ -32,6 +40,7 @@ namespace ShapeShifter.Geometry
             float d2 = d * d;
             float d3 = d2 * d;
 
+            // Successive differences replace repeated polynomial evaluation in the loop.
             Vector2 point = A0;
             Vector2 deltaP = A3 * d3 + A2 * d2 + A1 * d;
             Vector2 delta2P = 6f * A3 * d3 + 2f * A2 * d2;

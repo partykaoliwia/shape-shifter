@@ -1,5 +1,9 @@
 namespace ShapeShifter.Models.Constraints;
 
+/// <summary>
+/// Links the incoming and outgoing edges at a shared vertex.
+/// Reads the required continuity from the vertex so the relation follows its current setting.
+/// </summary>
 public sealed class ContinuityConstraint : IGeometricConstraint
 {
     public Vertex Vertex { get; }

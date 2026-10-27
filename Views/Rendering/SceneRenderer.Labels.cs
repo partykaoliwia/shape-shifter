@@ -6,6 +6,9 @@ namespace ShapeShifter.Views.Rendering
 {
     public partial class SceneRenderer
     {
+        /// <summary>
+        /// Places each stored target length just above its edge's midpoint.
+        /// </summary>
         private static void DrawLengthLabels(Scene scene)
         {
             const int fontSize = 12;
@@ -33,6 +36,10 @@ namespace ShapeShifter.Views.Rendering
                 }
             }
         }
+        /// <summary>
+        /// Gives both edges in a perpendicular pair the same symbol and number.
+        /// Stacks labels when an edge participates in several pairs.
+        /// </summary>
         private static void DrawPerpendicularLabels(Scene scene)
         {
             var rows = new Dictionary<Edge, int>();
@@ -49,7 +56,7 @@ namespace ShapeShifter.Views.Rendering
                     int x = (int)MathF.Round(midpoint.X) + 4;
                     int y = (int)MathF.Round(midpoint.Y) + 8 + row * 14;
 
-                    // ⟂
+                    // Draw the symbol directly because the default font lacks its glyph.
                     Raylib.DrawLine(
                         x + 5, y + 1,
                         x + 5, y + 10,
@@ -71,6 +78,10 @@ namespace ShapeShifter.Views.Rendering
                 pairNumber++;
             }
         }
+        /// <summary>
+        /// Labels a vertex's continuity when at least one adjacent edge is curved.
+        /// Joins between two line segments do not need a continuity label.
+        /// </summary>
         private static void DrawContinuityLabels(Scene scene)
         {
             foreach (var polygon in scene.Polygons)

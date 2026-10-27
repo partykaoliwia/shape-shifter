@@ -11,8 +11,15 @@ using ShapeShifter.Views.Rendering;
 
 namespace ShapeShifter
 {
+    /// <summary>
+    /// Starts the Raylib window and connects scene editing with the ImGui interface.
+    /// </summary>
     public class Program
     {
+        /// <summary>
+        /// Creates the demo scene, processes input and renders frames until the window closes.
+        /// Releases graphics resources after the main loop ends.
+        /// </summary>
         static void Main()
         {
             const int screenWidth = 1000;
@@ -42,6 +49,7 @@ namespace ShapeShifter
                 var io = ImGui.GetIO();
                 bool focused = Raylib.IsWindowFocused();
                 var mousePosition = Raylib.GetMousePosition();
+                // Keep sidebar clicks from selecting geometry hidden beneath the panel.
                 bool isMouseAvailable = focused
                     && !io.WantCaptureMouse
                     && mousePosition.X >= EditorPanel.SidebarWidth;
@@ -65,6 +73,7 @@ namespace ShapeShifter
                 }
                 panel.Draw(controller, ref lineAlgorithm);
                 int sidebarWidth = (int)EditorPanel.SidebarWidth;
+                // Reserve the sidebar area without changing the scene's coordinate system.
                 Raylib.BeginScissorMode(
                     sidebarWidth,
                     0,
@@ -72,6 +81,7 @@ namespace ShapeShifter
                     Raylib.GetScreenHeight());
                 renderer.Draw(scene,controller.GetViewState(),lineAlgorithm);
                 Raylib.EndScissorMode();
+                // Submit the interface last so panels and Help stay above the scene.
                 rlImGui.End();
                 Raylib.EndDrawing();
             }

@@ -2,6 +2,10 @@ using System.Numerics;
 
 namespace ShapeShifter.Models;
 
+/// <summary>
+/// A calculated circle and signed angular sweep, with angles expressed in radians.
+/// Separate from the editable segment so candidate geometry can be checked without applying it.
+/// </summary>
 public readonly record struct CircularArcGeometry(
     Vector2 Center,
     float Radius,
@@ -11,6 +15,9 @@ public readonly record struct CircularArcGeometry(
     private const float MinLength = 0.0001f;
     private const float MinRelativeSeparation = 0.001f;
 
+    /// <summary>
+    /// Evaluates the arc, with t = 0 at the start and t = 1 at the end.
+    /// </summary>
     public Vector2 PointAt(float t)
     {
         float angle = StartAngle + SweepAngle * t;
@@ -20,6 +27,11 @@ public readonly record struct CircularArcGeometry(
             MathF.Sin(angle));
     }
 
+    /// <summary>
+    /// Builds a semicircle for G0/G0 or derives a circle from the tangent at the G1 endpoint.
+    /// Rejects unsupported continuity and tangent configurations that cannot form a finite arc.
+    /// </summary>
+    /// <returns>True if a circle and sweep could be calculated.</returns>
     public static bool TryCreate(
         Vector2 start,
         Vector2 end,
@@ -74,12 +86,14 @@ public readonly record struct CircularArcGeometry(
 
             float denominator = Vector2.Dot(joinChord, normal);
 
+            // A tangent parallel to the chord would require an infinite radius.
             if (MathF.Abs(denominator)
                 <= MinRelativeSeparation * length)
             {
                 return false;
             }
 
+            // The center lies on the tangent's normal, equally far from both endpoints.
             float offset = joinChord.LengthSquared()
                 / (2f * denominator);
 
@@ -102,6 +116,7 @@ public readonly record struct CircularArcGeometry(
                 cross,
                 Vector2.Dot(first, second));
 
+            // Choose the signed sweep that follows the requested tangent direction.
             if (positiveSweep && sweepAngle <= 0f)
             {
                 sweepAngle += 2f * MathF.PI;

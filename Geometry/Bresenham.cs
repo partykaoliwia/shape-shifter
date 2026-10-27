@@ -1,7 +1,14 @@
 namespace ShapeShifter.Geometry
 {
+    /// <summary>
+    /// Rasterizes line segments with integer error updates instead of floating-point slopes.
+    /// </summary>
     public static class Bresenham
     {
+        /// <summary>
+        /// Returns line pixels in any octant, including both endpoints.
+        /// May reorder the endpoints to traverse the transformed segment from left to right.
+        /// </summary>
         public static IEnumerable<(int X, int Y)> Rasterize(int x1,int y1,int x2,int y2)
         {
             // Swap axes for steep lines.

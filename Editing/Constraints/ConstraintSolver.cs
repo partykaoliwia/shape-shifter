@@ -4,6 +4,10 @@ using ShapeShifter.Models.Constraints;
 
 namespace ShapeShifter.Editing.Constraints
 {
+    /// <summary>
+    /// Adjusts a working geometry snapshot by repeatedly correcting violated constraints.
+    /// The editor decides whether to apply or discard the resulting snapshot.
+    /// </summary>
     public partial class ConstraintSolver
     {
         private const int MaxIterations = 512;
@@ -11,6 +15,11 @@ namespace ShapeShifter.Editing.Constraints
         private const float PerpendicularTolerance = 0.0001f;
         private const float MinLengthSquared = 0.00000001f;
 
+        /// <summary>
+        /// Updates candidate values until every relation meets its tolerance or solving fails.
+        /// Fixed variables are not corrected. The supplied snapshot may also be modified on failure.
+        /// </summary>
+        /// <returns>True only when all constraints are satisfied within the iteration limit.</returns>
         public bool TrySolve(
             IReadOnlyList<IGeometricConstraint> constraints,
             Dictionary<IGeometryVariable, Vector2> positions,
@@ -32,6 +41,7 @@ namespace ShapeShifter.Editing.Constraints
                     return true;
                 }
 
+                // Correcting one relation can disturb another, so repeat complete passes.
                 foreach (var constraint in constraints)
                 {
                     if (IsSatisfied(constraint, positions, controlTarget))
@@ -80,6 +90,9 @@ namespace ShapeShifter.Editing.Constraints
                 IsSatisfied(constraint, positions, controlTarget));
         }
 
+        /// <summary>
+        /// Checks a relation against candidate values using the appropriate numeric tolerance.
+        /// </summary>
         private static bool IsSatisfied(
             IGeometricConstraint constraint,
             IReadOnlyDictionary<IGeometryVariable, Vector2> positions,
@@ -126,6 +139,10 @@ namespace ShapeShifter.Editing.Constraints
             }
         }
 
+        /// <summary>
+        /// Shares the distance error between movable endpoints along the segment's direction.
+        /// A fixed endpoint receives no correction.
+        /// </summary>
         private static bool ProjectLength(
             EdgeLengthConstraint constraint,
             Dictionary<IGeometryVariable, Vector2> positions,
@@ -164,6 +181,10 @@ namespace ShapeShifter.Editing.Constraints
             return true;
         }
 
+        /// <summary>
+        /// Corrects the signed angle toward the nearest right angle using endpoint gradients.
+        /// Shared endpoints combine their contributions before movable values are adjusted.
+        /// </summary>
         private static bool ProjectPerpendicular(
             PerpendicularConstraint constraint,
             Dictionary<IGeometryVariable, Vector2> positions,
@@ -226,6 +247,9 @@ namespace ShapeShifter.Editing.Constraints
             return true;
         }
 
+        /// <summary>
+        /// Adds contributions together when several constraint terms use the same variable.
+        /// </summary>
         private static void AddGradient(
             Dictionary<IGeometryVariable, Vector2> gradients,
             IGeometryVariable vertex,
@@ -235,6 +259,9 @@ namespace ShapeShifter.Editing.Constraints
             gradients[vertex] = existing + gradient;
         }
 
+        /// <summary>
+        /// Reads edge directions from the snapshot and rejects zero-length or non-finite vectors.
+        /// </summary>
         private static bool TryGetDirections(
             PerpendicularConstraint constraint,
             IReadOnlyDictionary<IGeometryVariable, Vector2>positions,

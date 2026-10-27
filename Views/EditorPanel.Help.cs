@@ -7,6 +7,9 @@ public partial class EditorPanel
 {
     private bool showHelp;
 
+    /// <summary>
+    /// Opens the in-app guide from a full-width sidebar button.
+    /// </summary>
     private void DrawHelpButton()
     {
         if (ImGui.Button("Help / documentation", new Vector2(-1f, 0f)))
@@ -15,6 +18,10 @@ public partial class EditorPanel
         }
     }
 
+    /// <summary>
+    /// Shows the guide when requested, centering it within the canvas each time it opens.
+    /// Groups controls, assumptions, data model and algorithms into expandable sections.
+    /// </summary>
     private void DrawHelpWindow()
     {
         if (!showHelp)
@@ -143,6 +150,9 @@ public partial class EditorPanel
 
         ImGui.End();
     }
+    /// <summary>
+    /// Draws an expandable documentation section with wrapped text and consistent indentation.
+    /// </summary>
     private static void DrawHelpSection(
         string title,
         string text,

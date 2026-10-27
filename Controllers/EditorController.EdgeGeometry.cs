@@ -4,6 +4,10 @@ namespace ShapeShifter.Controllers;
 
 public partial class EditorController
 {
+    /// <summary>
+    /// Changes the single selected edge's type after checking arc continuity requirements.
+    /// Reports removed constraints and refreshes hover after an accepted change.
+    /// </summary>
     public void SetSelectedEdgeGeometry(EdgeGeometryType geometryType)
     {
         var edge = SelectedEdge;
@@ -14,21 +18,15 @@ public partial class EditorController
             return;
         }
 
-        if (geometryType == EdgeGeometryType.CircularArc
-            && !CircularArcSegment.SupportsContinuity(edge.Start, edge.End))
+        if (geometryType == EdgeGeometryType.CircularArc && !CircularArcSegment.SupportsContinuity(edge.Start, edge.End))
         {
-            StatusMessage =
-                "An arc requires G0/G1 continuity, with G1 at only one endpoint.";
+            StatusMessage = "An arc requires G0/G1 continuity, with G1 at only one endpoint.";
             return;
         }
 
-        if (!geometryEditor.TrySetEdgeGeometry(
-            edge,
-            geometryType,
-            out int removedConstraintCount))
+        if (!geometryEditor.TrySetEdgeGeometry(edge, geometryType, out int removedConstraintCount))
         {
-            StatusMessage =
-                "Cannot change the edge geometry while preserving constraints.";
+            StatusMessage = "Cannot change the edge geometry while preserving constraints.";
             return;
         }
 

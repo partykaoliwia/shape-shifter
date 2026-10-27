@@ -2,9 +2,13 @@ using System.Numerics;
 
 namespace ShapeShifter.Models
 {
+    /// <summary>
+    /// Stores a closed, ordered edge loop whose neighboring edges share vertices.
+    /// Topology changes here do not update the scene's constraints.
+    /// </summary>
     public class Polygon
     {
-        // polygons contain only edges and edges contain vertices
+        // The edge order also defines the vertex order; no separate vertex list is needed.
         private readonly List<Edge>  edges = new();
         public IReadOnlyList<Edge> Edges => edges;
 
@@ -23,6 +27,11 @@ namespace ShapeShifter.Models
             }
         }
 
+        /// <summary>
+        /// Adds a midpoint vertex to an edge belonging to this polygon.
+        /// Bezier curves are subdivided; arcs are replaced by two line segments.
+        /// </summary>
+        /// <returns>True if the edge was split; false if it is missing or its arc geometry is invalid.</returns>
         public bool TrySplitEdge(Edge edge)
         {
             int index = edges.IndexOf(edge);
@@ -72,6 +81,11 @@ namespace ShapeShifter.Models
             return true;
         }
 
+        /// <summary>
+        /// Replaces the two edges meeting at a vertex with a line between its neighbors.
+        /// Keeps at least three vertices in the polygon.
+        /// </summary>
+        /// <returns>True if the vertex was found and removed.</returns>
         public bool TryRemoveVertex(Vertex vertex)
         {
             if (edges.Count <= 3)
@@ -98,6 +112,9 @@ namespace ShapeShifter.Models
 
             return true;
         }
+        /// <summary>
+        /// Restores the original edge objects and order after an edit is rejected.
+        /// </summary>
         internal void RestoreEdges(IReadOnlyList<Edge> previousEdges)
         {
             edges.Clear();

@@ -4,8 +4,15 @@ using ShapeShifter.Models;
 
 namespace ShapeShifter.Setup;
 
+/// <summary>
+/// Defines an editable startup scene that demonstrates the supported edge types and relations.
+/// </summary>
 public static class DemoSceneFactory
 {
+    /// <summary>
+    /// Creates two polygons, length and perpendicularity constraints, a Bezier segment and a G1 arc.
+    /// Uses the regular editor operations so the initial geometry satisfies the same rules as later edits.
+    /// </summary>
     public static Scene Create()
     {
         var scene = new Scene();
@@ -70,6 +77,9 @@ public static class DemoSceneFactory
         return scene;
     }
 
+    /// <summary>
+    /// Builds and registers a polygon from coordinates, keeping startup scene definitions readable.
+    /// </summary>
     private static Polygon AddPolygon(
         Scene scene,
         params Vector2[] positions)
@@ -84,6 +94,9 @@ public static class DemoSceneFactory
         return polygon;
     }
 
+    /// <summary>
+    /// Ensures every requested demo operation succeeded before the scene is returned.
+    /// </summary>
     private static void Require(bool success, string message)
     {
         if (!success)

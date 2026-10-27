@@ -7,6 +7,10 @@ namespace ShapeShifter.Editing;
 
 public partial class GeometryEditor
 {
+    /// <summary>
+    /// Moves a Bezier handle to an absolute position while preserving relations.
+    /// Tries fixed curve endpoints first, then movable endpoints, then a connected-group translation.
+    /// </summary>
     public void MoveControlPointTo(
         BezierControlPoint controlPoint,
         Vector2 position)
@@ -48,6 +52,10 @@ public partial class GeometryEditor
         controlPoint.MoveTo(position);
     }
 
+    /// <summary>
+    /// Solves one handle move on a fresh snapshot with optional endpoint locks.
+    /// Applies the snapshot only on success and keeps the handle at its absolute target.
+    /// </summary>
     private bool TryMoveControlPoint(
         Edge edge,
         ControlPointTarget target,
@@ -81,7 +89,7 @@ public partial class GeometryEditor
 
         ApplyPositions(positions);
 
-        // The anchor may have moved during solving.
+        // Recompute the offset from the final anchor so the handle stays at the cursor.
         target.Point.MoveTo(target.Position);
 
         return true;

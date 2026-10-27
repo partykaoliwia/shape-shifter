@@ -5,6 +5,9 @@ using ShapeShifter.Models.Constraints;
 
 namespace ShapeShifter.Editing
 {
+    /// <summary>
+    /// Coordinates scene edits and adjusts geometry to preserve its constraints.
+    /// </summary>
     public partial class GeometryEditor
     {
         private readonly Scene scene;
@@ -15,6 +18,13 @@ namespace ShapeShifter.Editing
             this.scene = scene;
         }
 
+        /// <summary>
+        /// Adds or replaces a line segment's length constraint, keeping its start vertex fixed.
+        /// The constraint and adjusted geometry are applied only if solving succeeds.
+        /// </summary>
+        /// <returns>
+        /// True if applied; false if the edge is not a line in this scene or solving fails.
+        /// </returns>
         public bool TrySetLength(Edge edge, float targetLength)
         {
             if (!edge.IsLine || !scene.ContainsEdge(edge))
@@ -43,6 +53,13 @@ namespace ShapeShifter.Editing
             return true;
         }
 
+        /// <summary>
+        /// Adds perpendicularity between two line segments, including segments in different polygons.
+        /// Keeps the first segment's start vertex fixed and preserves the scene if solving fails.
+        /// </summary>
+        /// <returns>
+        /// True if the relation already exists or was added; false if the edges are invalid or solving fails.
+        /// </returns>
         public bool TryAddPerpendicular(Edge first, Edge second)
         {
             if (first == second
@@ -76,6 +93,10 @@ namespace ShapeShifter.Editing
 
             return true;
         }
+        /// <summary>
+        /// Moves a vertex to the requested position and adjusts related geometry.
+        /// If local solving fails, moves the connected group to keep the vertex at its target.
+        /// </summary>
         public void MoveVertexTo(Vertex vertex, Vector2 position)
         {
             var targets = new Dictionary<Vertex, Vector2>
@@ -86,6 +107,10 @@ namespace ShapeShifter.Editing
             ApplyMove(targets, position - vertex.Position);
         }
 
+        /// <summary>
+        /// Moves all polygon vertices by the same offset while preserving constraints.
+        /// Geometry connected through constraints may move along with the polygon.
+        /// </summary>
         public void MovePolygonBy(Polygon polygon, Vector2 offset)
         {
             var targets = polygon.Edges
@@ -97,6 +122,11 @@ namespace ShapeShifter.Editing
 
             ApplyMove(targets, offset);
         }
+        /// <summary>
+        /// Inserts a midpoint vertex on the selected edge.
+        /// Updates relations for the new edges, or restores the original edges if solving fails.
+        /// </summary>
+        /// <returns>True if the split was accepted; otherwise, false.</returns>
         public bool TrySplitEdge(Polygon polygon, Edge edge)
         {
             if (!scene.Polygons.Contains(polygon))
@@ -114,6 +144,13 @@ namespace ShapeShifter.Editing
             return TryFinishTopologyChange(polygon, previousEdges);
         }
 
+        /// <summary>
+        /// Removes a vertex and joins its neighbors with a line segment.
+        /// Drops constraints on replaced edges only after the remaining relations are satisfied.
+        /// </summary>
+        /// <returns>
+        /// True if the removal was accepted; otherwise, false with the original state preserved.
+        /// </returns>
         public bool TryRemoveVertex(Polygon polygon, Vertex vertex)
         {
             if (!scene.Polygons.Contains(polygon))
@@ -132,6 +169,10 @@ namespace ShapeShifter.Editing
         }
     
 
+        /// <summary>
+        /// Removes an explicit constraint without changing the current geometry.
+        /// </summary>
+        /// <returns>True if the constraint was present and removed.</returns>
         public bool RemoveConstraint(IGeometricConstraint constraint)
         {
             return scene.RemoveConstraint(constraint);
@@ -146,6 +187,10 @@ namespace ShapeShifter.Editing
             }
         }
 
+        /// <summary>
+        /// Tries to satisfy constraints with the target vertices held at their requested positions.
+        /// Falls back to translating their connected group if local solving fails.
+        /// </summary>
         private void ApplyMove(
             Dictionary<Vertex, Vector2> targets,
             Vector2 offset)
@@ -154,6 +199,7 @@ namespace ShapeShifter.Editing
 
             var positions = CapturePositions();
 
+            // Keep dragged vertices at their targets; only related geometry may adjust.
             var fixedVertices = targets.Keys
                 .Cast<IGeometryVariable>()
                 .ToHashSet();
@@ -169,7 +215,7 @@ namespace ShapeShifter.Editing
                 return;
             }
 
-            // Translate the connected component without changing its shape.
+            // A shared translation preserves existing relations when local solving fails.
             foreach (var vertex in GetConnectedVertices(
                 targets.Keys, constraints))
             {
@@ -193,6 +239,10 @@ namespace ShapeShifter.Editing
             GeometrySnapshot.Apply(positions);
         }
 
+        /// <summary>
+        /// Finds vertices linked to the starting vertices through constraints.
+        /// Each constraint links the endpoints of all its affected edges, even across polygons.
+        /// </summary>
         private static HashSet<Vertex> GetConnectedVertices(
             IEnumerable<Vertex> seeds,
             IReadOnlyList<IGeometricConstraint> constraints)

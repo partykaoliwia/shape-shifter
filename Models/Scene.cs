@@ -6,6 +6,10 @@ using ShapeShifter.Models.Constraints;
 
 namespace ShapeShifter.Models
 {
+    /// <summary>
+    /// Owns polygons and their explicitly assigned geometric constraints.
+    /// Stores relations without solving them; geometry edits are handled by the editor.
+    /// </summary>
     public class Scene
     {
         private readonly List<Polygon> polygons = new();
@@ -22,6 +26,10 @@ namespace ShapeShifter.Models
             return polygons.Any(polygon => polygon.Edges.Contains(edge));
         }
 
+        /// <summary>
+        /// Stores a length constraint, replacing any previous length for this edge.
+        /// Does not move vertices or check whether all scene relations can be satisfied.
+        /// </summary>
         public void SetLengthConstraint(Edge edge, float targetLength)
         {
             ArgumentNullException.ThrowIfNull(edge);
@@ -38,11 +46,18 @@ namespace ShapeShifter.Models
             constraints.Add(constraint);
         }
 
+        /// <summary>
+        /// Removes a stored relation while leaving the current geometry unchanged.
+        /// </summary>
+        /// <returns>True if the constraint was present and removed.</returns>
         public bool RemoveConstraint(IGeometricConstraint constraint)
         {
             return constraints.Remove(constraint);
         }
 
+        /// <summary>
+        /// Drops relations that reference edges no longer present after a topology change.
+        /// </summary>
         public void RemoveInvalidConstraints()
         {
             constraints.RemoveAll(constraint => constraint.AffectedEdges.Any(edge => !ContainsEdge(edge)));
@@ -53,6 +68,9 @@ namespace ShapeShifter.Models
                 .OfType<EdgeLengthConstraint>()
                 .FirstOrDefault(constraint => constraint.Edge == edge);
         }
+        /// <summary>
+        /// Finds the relation for an edge pair, regardless of the order of the two edges.
+        /// </summary>
         public PerpendicularConstraint? GetPerpendicularConstraint(Edge first, Edge second)
         {
             return constraints
@@ -65,6 +83,10 @@ namespace ShapeShifter.Models
             return constraints.OfType<PerpendicularConstraint>();
         }
 
+        /// <summary>
+        /// Stores perpendicularity between two scene edges unless that pair already has it.
+        /// Does not adjust geometry; the editor solves the proposed relation before adding it.
+        /// </summary>
         public void AddPerpendicularConstraint(Edge first, Edge second)
         {
             ArgumentNullException.ThrowIfNull(first);

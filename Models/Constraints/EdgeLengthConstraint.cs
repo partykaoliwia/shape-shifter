@@ -1,5 +1,9 @@
 namespace ShapeShifter.Models.Constraints
 {
+    /// <summary>
+    /// Stores the positive target length of a line segment.
+    /// The solver adjusts endpoint positions to satisfy this value.
+    /// </summary>
     public class EdgeLengthConstraint : IGeometricConstraint
     {
         public Edge Edge { get; }

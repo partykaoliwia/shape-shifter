@@ -2,6 +2,9 @@ using System.Numerics;
 
 namespace ShapeShifter.Models
 {
+    /// <summary>
+    /// A cubic Bezier curve with shared endpoints and two handles anchored to those endpoints.
+    /// </summary>
     public class CubicBezierSegment
     {
         public Vertex Start { get; }
@@ -10,6 +13,9 @@ namespace ShapeShifter.Models
         public BezierControlPoint Control1 { get; }
         public BezierControlPoint Control2 { get; }
 
+        /// <summary>
+        /// Creates a straight initial curve with handles one third and two thirds along the chord.
+        /// </summary>
         public CubicBezierSegment(Vertex start, Vertex end)
             : this(
                 start,
@@ -32,6 +38,10 @@ namespace ShapeShifter.Models
             Control2 = new BezierControlPoint(end, control2);
         }
 
+        /// <summary>
+        /// Splits the curve at t = 0.5 using de Casteljau subdivision.
+        /// The two curves share a new midpoint vertex and reproduce the original curve.
+        /// </summary>
         public (CubicBezierSegment First, CubicBezierSegment Second) Split()
         {
             Vector2 v0 = Start.Position;

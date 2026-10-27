@@ -6,8 +6,15 @@ using ShapeShifter.Editing.Interaction;
 
 namespace ShapeShifter.Views.Rendering
 {
+    /// <summary>
+    /// Draws scene geometry, editing handles and constraint labels without changing the model.
+    /// </summary>
     public partial class SceneRenderer
     {
+       /// <summary>
+       /// Draws edges first, then vertices, handles and labels so editing markers remain visible.
+       /// Uses the supplied view state to highlight hovered and selected elements.
+       /// </summary>
        public void Draw(Scene scene, EditorViewState state,LineAlgorithm lineAlgorithm)
         {
             var hovered = state.HoveredElement;
@@ -53,6 +60,9 @@ namespace ShapeShifter.Views.Rendering
             DrawContinuityLabels(scene);
         }
         
+        /// <summary>
+        /// Rounds endpoints to pixel coordinates and draws with Raylib or the custom Bresenham algorithm.
+        /// </summary>
         private static void DrawLine(Vector2 start, Vector2 end, Color color, LineAlgorithm lineAlgorithm)
         {
             int x0 = (int)MathF.Round(start.X);
@@ -71,6 +81,10 @@ namespace ShapeShifter.Views.Rendering
             }
         }
 
+        /// <summary>
+        /// Selects the edge's representation and connects curve samples with the chosen line algorithm.
+        /// Bezier edges also display their dashed control polygon.
+        /// </summary>
         private static void DrawEdge(
             Edge edge,
             Color color,
@@ -113,6 +127,9 @@ namespace ShapeShifter.Views.Rendering
             }
         }
 
+        /// <summary>
+        /// Draws both handles of every Bezier segment, highlighting the hovered handle.
+        /// </summary>
         private static void DrawBezierHandles(
             Scene scene,
             BezierControlPoint? hoveredControlPoint)
@@ -150,6 +167,9 @@ namespace ShapeShifter.Views.Rendering
                 color);
         }
 
+        /// <summary>
+        /// Draws a control-polygon guide using five-pixel dashes separated by five-pixel gaps.
+        /// </summary>
         private static void DrawDashedLine(Vector2 start, Vector2 end)
         {
             Vector2 delta = end - start;

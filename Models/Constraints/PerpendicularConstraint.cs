@@ -1,5 +1,9 @@
 namespace ShapeShifter.Models.Constraints
 {
+    /// <summary>
+    /// Requires two distinct line segments to have perpendicular directions.
+    /// The segments may belong to different polygons.
+    /// </summary>
     public class PerpendicularConstraint : IGeometricConstraint
     {
         public Edge First { get; }
@@ -23,6 +27,9 @@ namespace ShapeShifter.Models.Constraints
             AffectedEdges = Array.AsReadOnly(new[] { first, second });
         }
 
+        /// <summary>
+        /// Checks the edge pair in either order, since the relation is symmetric.
+        /// </summary>
         public bool Matches(Edge first, Edge second)
         {
             return (First == first && Second == second) || (First == second && Second == first);

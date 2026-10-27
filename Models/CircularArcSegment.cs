@@ -2,6 +2,10 @@ using System.Numerics;
 
 namespace ShapeShifter.Models;
 
+/// <summary>
+/// An arc whose circle is derived from shared endpoints and their continuity settings.
+/// Its stored tangent is a solver variable used at the endpoint with G1 continuity.
+/// </summary>
 public sealed class CircularArcSegment : IGeometryVariable
 {
     public Vertex Start { get; }
@@ -42,6 +46,10 @@ public sealed class CircularArcSegment : IGeometryVariable
         TangentDirection = direction;
     }
 
+    /// <summary>
+    /// Calculates the circle and sweep from the segment's current state.
+    /// </summary>
+    /// <returns>True if the continuity settings and geometry define a valid arc.</returns>
     public bool TryGetGeometry(out CircularArcGeometry geometry)
     {
         return TryGetGeometry(
@@ -51,6 +59,10 @@ public sealed class CircularArcSegment : IGeometryVariable
             out geometry);
     }
 
+    /// <summary>
+    /// Calculates an arc from candidate positions and a tangent without changing the segment.
+    /// Uses the endpoint vertices' continuity settings when evaluating a solver snapshot.
+    /// </summary>
     public bool TryGetGeometry(
         Vector2 start,
         Vector2 end,
@@ -74,6 +86,9 @@ public sealed class CircularArcSegment : IGeometryVariable
             out geometry);
     }
 
+    /// <summary>
+    /// Allows G0 at either endpoint and G1 at at most one endpoint; C1 is not supported.
+    /// </summary>
     public static bool SupportsContinuity(Vertex start, Vertex end)
     {
         return start.Continuity != ContinuityType.C1

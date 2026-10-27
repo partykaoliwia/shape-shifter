@@ -3,11 +3,18 @@ using ImGuiNET;
 
 namespace ShapeShifter.Views;
 
+/// <summary>
+/// Defines the shared plum and lavender palette for the sidebar and Help window.
+/// </summary>
 public static class EditorTheme
 {
     public static readonly Vector4 Accent = Rgb(181, 154, 197);
     public static readonly Vector4 MutedText = Rgb(191, 174, 201);
 
+    /// <summary>
+    /// Applies interface colors, spacing and rounding after ImGui has been initialized.
+    /// Affects ImGui widgets; the scene canvas is drawn separately by Raylib.
+    /// </summary>
     public static void Apply()
     {
         var style = ImGui.GetStyle();

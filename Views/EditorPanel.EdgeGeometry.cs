@@ -6,6 +6,10 @@ namespace ShapeShifter.Views;
 
 public partial class EditorPanel
 {
+    /// <summary>
+    /// Offers line, Bezier and arc representations for the single selected edge.
+    /// Shows curve-specific guidance and routes type changes through the controller.
+    /// </summary>
     private static void DrawEdgeGeometryEditor(EditorController controller)
     {
         DrawSectionTitle("Edge geometry");

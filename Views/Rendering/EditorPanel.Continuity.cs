@@ -6,6 +6,10 @@ namespace ShapeShifter.Views;
 
 public partial class EditorPanel
 {
+    /// <summary>
+    /// Shows continuity choices for the selected vertex, including settings for future curves.
+    /// Hides C1 at arc endpoints and leaves validation of G1 combinations to the editor.
+    /// </summary>
     private static void DrawContinuityEditor(EditorController controller)
     {
         DrawSectionTitle("Vertex continuity");

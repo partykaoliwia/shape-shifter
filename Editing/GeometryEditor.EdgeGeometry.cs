@@ -4,6 +4,11 @@ namespace ShapeShifter.Editing;
 
 public partial class GeometryEditor
 {
+    /// <summary>
+    /// Changes an edge's representation and solves the remaining relations.
+    /// Removes affected explicit constraints on success, or restores the original representation on failure.
+    /// </summary>
+    /// <returns>True if the type was already selected or the change was accepted.</returns>
     public bool TrySetEdgeGeometry(
         Edge edge,
         EdgeGeometryType geometryType,

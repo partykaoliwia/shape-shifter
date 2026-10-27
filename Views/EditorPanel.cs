@@ -10,14 +10,23 @@ using ShapeShifter.Models;
 
 namespace ShapeShifter.Views
 {
+    /// <summary>
+    /// Builds the fixed editing sidebar and documentation window.
+    /// Sends user actions to the controller instead of changing scene geometry directly.
+    /// </summary>
     public partial class EditorPanel
     {
         public const float SidebarWidth = 320f;
 
         private Edge? lengthEditorEdge;
         private float targetLength;
+        /// <summary>
+        /// Draws the full-height sidebar, selected-element controls and drawing algorithm choice.
+        /// Opens the separate Help window when requested.
+        /// </summary>
         public void Draw(EditorController controller, ref LineAlgorithm lineAlgorithm)
         {
+            // Override saved window placement so the sidebar remains part of the application layout.
             ImGui.SetNextWindowPos(Vector2.Zero, ImGuiCond.Always);
             ImGui.SetNextWindowSize(
                 new Vector2(SidebarWidth, ImGui.GetIO().DisplaySize.Y),
@@ -81,6 +90,9 @@ namespace ShapeShifter.Views
             DrawHelpWindow();
         }
 
+        /// <summary>
+        /// Keeps section headings consistent through shared spacing and the theme's accent color.
+        /// </summary>
         private static void DrawSectionTitle(string title)
         {
             ImGui.Spacing();
@@ -89,6 +101,10 @@ namespace ShapeShifter.Views
             ImGui.TextColored(EditorTheme.Accent, title);
         }
 
+        /// <summary>
+        /// Shows relation controls for two selected line segments after dragging ends.
+        /// Delegates adding and removing perpendicularity to the controller.
+        /// </summary>
         private void DrawPerpendicularEditor(EditorController controller)
         {
             DrawSectionTitle("Perpendicularity");
@@ -132,6 +148,10 @@ namespace ShapeShifter.Views
                 controller.RemoveSelectedPerpendicular();
             }
         }
+        /// <summary>
+        /// Shows the current and requested lengths for a single selected line segment.
+        /// Initializes the input from the edge's current length and delegates changes to the controller.
+        /// </summary>
         private void DrawLengthEditor(EditorController controller)
         {
             DrawSectionTitle("Edge length");
@@ -153,7 +173,7 @@ namespace ShapeShifter.Views
 
             float currentLength = Vector2.Distance(edge.Start.Position,edge.End.Position);
 
-            // Initialize the input only when the selected edge changes.
+            // Preserve the user's typed value across frames until another edge is selected.
             if (lengthEditorEdge != edge)
             {
                 lengthEditorEdge = edge;

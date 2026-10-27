@@ -6,35 +6,30 @@ namespace ShapeShifter.Editing.Constraints;
 
 public partial class ConstraintSolver
 {
-    private static bool IsArcGeometrySatisfied(
-        ArcGeometryConstraint constraint,
-        IReadOnlyDictionary<IGeometryVariable, Vector2> positions)
+    /// <summary>
+    /// Checks whether candidate endpoints and the arc tangent define valid circular geometry.
+    /// </summary>
+    private static bool IsArcGeometrySatisfied(ArcGeometryConstraint constraint, IReadOnlyDictionary<IGeometryVariable, Vector2> positions)
     {
         var arc = constraint.Edge.Arc;
 
-        return arc != null
-            && arc.TryGetGeometry(
-                positions[arc.Start],
-                positions[arc.End],
-                positions[arc],
-                out _);
+        return arc != null  && arc.TryGetGeometry(positions[arc.Start], positions[arc.End], positions[arc], out _);
     }
 
-    private static bool ProjectArcGeometry(
-        ArcGeometryConstraint constraint,
-        Dictionary<IGeometryVariable, Vector2> positions,
-        IReadOnlySet<IGeometryVariable> fixedVariables)
+    /// <summary>
+    /// Tries to repair invalid G1 arc geometry by adjusting its tangent or movable endpoints.
+    /// With both endpoints fixed, slightly rotates the tangent for the next solver pass.
+    /// </summary>
+    private static bool ProjectArcGeometry(ArcGeometryConstraint constraint, Dictionary<IGeometryVariable, Vector2> positions, IReadOnlySet<IGeometryVariable> fixedVariables)
     {
         var arc = constraint.Edge.Arc;
 
-        if (arc == null
-            || !CircularArcSegment.SupportsContinuity(arc.Start, arc.End))
+        if (arc == null || !CircularArcSegment.SupportsContinuity(arc.Start, arc.End))
         {
             return false;
         }
 
-        if (arc.Start.Continuity == ContinuityType.G0
-            && arc.End.Continuity == ContinuityType.G0)
+        if (arc.Start.Continuity == ContinuityType.G0  && arc.End.Continuity == ContinuityType.G0)
         {
             return false;
         }
@@ -49,6 +44,7 @@ public partial class ConstraintSolver
                 return false;
             }
 
+            // A tangent perpendicular to the chord provides a finite initial circle.
             Vector2 initial = new(chord.Y, -chord.X);
 
             if (initial.LengthSquared() <= MinLengthSquared)
@@ -73,16 +69,15 @@ public partial class ConstraintSolver
         Vector2 direction = Vector2.Normalize(tangent);
         Vector2 normal = new(-direction.Y, direction.X);
 
-        float startWeight =
-            fixedVariables.Contains(arc.Start) ? 0f : 1f;
+        float startWeight = fixedVariables.Contains(arc.Start) ? 0f : 1f;
 
-        float endWeight =
-            fixedVariables.Contains(arc.End) ? 0f : 1f;
+        float endWeight = fixedVariables.Contains(arc.End) ? 0f : 1f;
 
         float totalWeight = startWeight + endWeight;
 
         if (totalWeight > 0f)
         {
+            // Separate the endpoints across the tangent to avoid an infinite-radius circle.
             float separation = Vector2.Dot(chord, normal);
             float required = MathF.Max(1f, chord.Length() * 0.01f);
 
@@ -90,8 +85,7 @@ public partial class ConstraintSolver
                 ? -required
                 : required;
 
-            Vector2 correction =
-                normal * ((target - separation) / totalWeight);
+            Vector2 correction = normal * ((target - separation) / totalWeight);
 
             positions[arc.Start] -= correction * startWeight;
             positions[arc.End] += correction * endWeight;
@@ -99,8 +93,7 @@ public partial class ConstraintSolver
             return true;
         }
 
-        if (chord.LengthSquared() <= MinLengthSquared
-            || fixedVariables.Contains(arc))
+        if (chord.LengthSquared() <= MinLengthSquared || fixedVariables.Contains(arc))
         {
             return false;
         }
